@@ -20,10 +20,20 @@
 					<textarea class="form-control" id="txtRazonv" rows="3"></textarea>
 				</div>
 			</div>
-			<div class="form-row">	
+<!-- 			<div class="form-row">	
 				<label for="validationCustom02">Correo jefe directo</label>
 				<input type="text" class="form-control" id="txtMailv" value="<?php echo	$managerMail;?>" disabled>
-			</div>
+			</div> -->
+			<div class="form-row" id="agregar-txt" action="#">	
+				<div class="col-md-6 mb-3">
+					<label>Jefe directo</label>
+					<input type="text" class="form-control" id="txtNamev" value="<?php echo	$managerName;?>" disabled>
+				</div>
+				<div class="col-md-6 mb-3">
+					<label>Correo jefe directo</label>
+					<input type="text" class="form-control" id="txtMailv" value="<?php echo	$managerMail;?>" disabled>
+				</div>
+			</div>			
 			<br>	
 			<input type="submit" class="btn btn-success nuevo-vacaciones" id="" value="Enviar">
 			<input type="hidden" id="typev" value="vacaciones">

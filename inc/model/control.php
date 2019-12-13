@@ -4,12 +4,12 @@ $accion = $_POST['accion'];
 //VERIFICAR QUE LA ACCION PROVIENE DEL FORM DE LOGIN
 if ($accion == 'login')
 {
-   include '../function/connection.php';
-   $usuario = $_POST['usuario'];
-   $password = $_POST['password'];
+ include '../function/connection.php';
+ $usuario = $_POST['usuario'];
+ $password = $_POST['password'];
    //HASHEAR LA CONTRASEÑA INGRESADA EN EL ACCESO
-   $password = hash('sha512',$password);
-   try{
+ $password = hash('sha512',$password);
+ try{
     $query = "SELECT pe.employee,pe.emp_name,pe.emp_status,aw.password,aw.counter_login,aw.estado
     FROM PJEMPLOY pe
     INNER JOIN P1ACCESOWEB aw
@@ -19,15 +19,15 @@ if ($accion == 'login')
     $stmt = sqlsrv_query( $con, $query, $params );
 
     if ($row = sqlsrv_fetch_array( $stmt, SQLSRV_FETCH_ASSOC)) {
-     $passwordDB = trim($row['password']);
-     $employeeName = trim(ucwords(strtolower($row['emp_name'])));
-     $employee = trim($row['employee']);
-     $employee_status = trim($row['emp_status']);
-     $estado_conexion = trim($row['estado']);
-     $counter = trim($row['counter_login']);
-     $estado_en_linea = 1;
+       $passwordDB = trim($row['password']);
+       $employeeName = trim(ucwords(strtolower($row['emp_name'])));
+       $employee = trim($row['employee']);
+       $employee_status = trim($row['emp_status']);
+       $estado_conexion = trim($row['estado']);
+       $counter = trim($row['counter_login']);
+       $estado_en_linea = 1;
      //VERIFICAR QUE EL EMPLEADO ESTE ACTIVO EN EL SISTEMA
-     if ($employee_status === 'A') {
+       if ($employee_status === 'A') {
         if ($password === $passwordDB) {
             if ($estado_conexion === '0') {
                 session_start();
@@ -38,7 +38,7 @@ if ($accion == 'login')
                     'estado' => 'correcto',
                     'nombre' => $employeeName,
                     'tipo' => $accion
-                );
+                    );
             //ACTUALIZAR CONTADOR DE SESIONES
                 $counter++;
                 $queryUpdate = "UPDATE P1ACCESOWEB SET last_login_datetime = GETDATE(),counter_login = ?, estado = ? WHERE employee = ?";
@@ -49,33 +49,33 @@ if ($accion == 'login')
                 $respuesta = array(
                     'estado' => 'error',
                     'informacion'  => 'La sesión esta activa'
-                );
+                    );
             }
         }else{
-           $respuesta = array(
+         $respuesta = array(
             'estado' => 'error',
             'informacion'  => 'Error usuario y/o contraseña equivocados'
-        );
-       }
-   }else{
+            );
+     }
+ }else{
     $respuesta = array(
         'estado' => 'error',
         'informacion'  => 'El trabajador esta inactivo en el sistema'
-    );
+        );
 }
 } else {
     $respuesta = array(
         'estado' => 'error',
         'informacion'  => 'Error usuario y/o contraseña equivocados'
-    );
+        );
 }
 sqlsrv_free_stmt( $stmt);
 sqlsrv_close( $con );
 }catch(PDOException $e) {
     // En caso de un error, tomar la exepcion
-   $respuesta = array(
+ $respuesta = array(
     'pass' => $e->getMessage()
-);
+    );
 }
 echo json_encode($respuesta);
 }
@@ -98,42 +98,72 @@ if ($accion == 'salir')
     $respuesta = array(
         'estado' => 'correcto',
         'informacion'  => 'Saliendo de la sesión'
-    );
+        );
     echo json_encode($respuesta);
 }
 
-if ($accion == 'txt' || $accion == 'txtc')
+if ($accion == 'txt' || $accion == 'txtc' || $accion == 'salidaTrabajo')
 {
+    //die(json_encode($_POST));
     include '../function/connection.php';
     $fecha = $_POST['fecha'];
     $horas = $_POST['horas'];
+    $motivo = $_POST['motivo'];
     $razon = $_POST['razon'];
     $employeeID = $_POST["employeeID"];
+    $nombre_empleado = $_POST["n_empleado"];
+    $nombre_destinatario = $_POST["n_destinatario"];
+    $correo_destinatario = $_POST["c_destinatario"];
+    
     try{
-        if ($accion == 'txt')
+        if ($accion == 'txt'){
             $tipo = 1;
-        else
+        }else if($accion == 'txtc'){
             $tipo = 2;
-        $insert_qry = "INSERT INTO P1TXTVAC (employee,fecha,tipo,horas,emp_observaciones,crtd_user,lupd_datetime,lupd_user)
-        VALUES (?,?,?,?,?,?,GETDATE(),?)";
-        $params = array( $employeeID, $fecha, $tipo, $horas, $razon, $employeeID, $employeeID);
-        $stmt = sqlsrv_query( $con, $insert_qry, $params );
-        if( $stmt ) {
-            $respuesta = array(
-                'estado' => 'correcto'
-            );
         }else{
-            die( print_r( sqlsrv_errors(), true));
+            $tipo = 5;
         }
-        sqlsrv_free_stmt( $stmt);
-        sqlsrv_close( $con );
-    }catch(PDOException $e) {
-        // En caso de un error, tomar la exepcion
-        $respuesta = array(
-            'estado' => 'error',
-            'log' => $e->getMessage()
-        );
+        $qryValidator = "SELECT * FROM P1TXTVAC WHERE employee = ? AND fecha = ? AND tipo = ?";
+        $params_ = array( $employeeID, $fecha, $tipo);
+        $options =  array( "Scrollable" => SQLSRV_CURSOR_KEYSET );
+        $stmt_ = sqlsrv_query( $con, $qryValidator, $params_, $options);
+        $result_num = sqlsrv_num_rows( $stmt_ ); 
+        if ($result_num > 0) {
+            $respuesta = array(
+                'estado' => 'incorrecto',
+                'mensaje' => 'Ya existe una incidencia del mismo tipo en la fecha seleccionada, favor de verificar tu registro.'
+                );
+        } 
+        else {
+            $insert_qry = "INSERT INTO P1TXTVAC (employee,fecha,tipo,horas,puesto,emp_observaciones,crtd_user,lupd_datetime,lupd_user)
+            VALUES (?,?,?,?,?,?,?,GETDATE(),?)";
+            $params = array( $employeeID, $fecha, $tipo, $horas, $motivo,$razon, $employeeID, $employeeID);
+            $stmt = sqlsrv_query( $con, $insert_qry, $params );
+            if( $stmt ) {
+                $respuesta = array(
+                    'estado' => 'correcto'
+                    );
+                $fechaINI = $fecha;
+                $fechaFIN = $fecha;
+                //PARA ENVIO DE CORREO
+                enviarCorreo ($correo_destinatario,$nombre_destinatario,$employeeID, $nombre_empleado, $accion, $razon, $fechaINI, $fechaFIN, $horas);
+            }else{
+                die( print_r( sqlsrv_errors(), true));
+            }
+        }
+        
+        }catch(PDOException $e) {
+            // En caso de un error, tomar la exepcion
+            $respuesta = array(
+                'estado' => 'error',
+                'log' => $e->getMessage()
+                );
     }
+    
+
+    sqlsrv_free_stmt( $stmt_);
+    sqlsrv_free_stmt( $stmt);
+    sqlsrv_close( $con );
     echo json_encode($respuesta);
 }
 
@@ -160,7 +190,7 @@ if ($accion == 'editar_incidencia')
                     $respuesta = array(
                         'estado' => 'correcto',
                         'informacion' => 'La incidencia ha sido actualizada!'
-                    );
+                        );
                 }else{
                     die( print_r( sqlsrv_errors(), true));
                 }
@@ -169,7 +199,7 @@ if ($accion == 'editar_incidencia')
                 $respuesta = array(
                     'estado' => 'incorrecto',
                     'informacion' => 'Ya esta validada por tu jefe directo'
-                );
+                    );
             }
         }
     } else {
@@ -182,7 +212,7 @@ if ($accion == 'editar_incidencia')
     $respuesta = array(
         'estado' => 'error',
         'log' => $e->getMessage()
-    );
+        );
 }
 echo json_encode($respuesta);
 }
@@ -208,16 +238,16 @@ if ($accion == 'eliminar_incidencia')
                     $respuesta = array(
                         'estado' => 'correcto',
                         'informacion' => 'La incidencia ha sido eliminada!'
-                    );
+                        );
                 }else{
-                 die( print_r( sqlsrv_errors(), true)); 
-             }
-             sqlsrv_free_stmt( $stmt );
-         }else{
+                   die( print_r( sqlsrv_errors(), true)); 
+               }
+               sqlsrv_free_stmt( $stmt );
+           }else{
             $respuesta = array(
                 'estado' => 'incorrecto',
                 'informacion' => 'Ya esta validada por tu jefe directo'
-            );
+                );
         }
     }
 }else {
@@ -230,7 +260,7 @@ sqlsrv_close( $con );
     $respuesta = array(
         'estado' => 'error',
         'log' => $e->getMessage()
-    );
+        );
 }
 echo json_encode($respuesta);
 }
@@ -251,7 +281,7 @@ if ($accion == 'voboJefe')
         if( $stmt ) {
             $respuesta = array(
                 'estado' => 'correcto'
-            );
+                );
         }else{
             die( print_r( sqlsrv_errors(), true)); 
         }
@@ -261,7 +291,7 @@ if ($accion == 'voboJefe')
         $respuesta = array(
             'estado' => 'error',
             'log' => $e->getMessage()
-        );
+            );
     }
     echo json_encode($respuesta);
 }
@@ -282,7 +312,7 @@ if ($accion == 'voboRH')
         if( $stmt ) {
             $respuesta = array(
                 'estado' => 'correcto'
-            );
+                );
         }else{
             die( print_r( sqlsrv_errors(), true)); 
         }
@@ -292,7 +322,7 @@ if ($accion == 'voboRH')
         $respuesta = array(
             'estado' => 'error',
             'log' => $e->getMessage()
-        );
+            );
     }
     echo json_encode($respuesta);
 }
@@ -308,48 +338,48 @@ if ($accion == 'eliminar_regviejos') {
     $params = array( $id_empleado );
     $stmt = sqlsrv_query( $con, $queryVerify, $params );
     if( $stmt === false ) {
-         die( print_r( sqlsrv_errors(), true));
+       die( print_r( sqlsrv_errors(), true));
+   }
+   while ($row = sqlsrv_fetch_array( $stmt, SQLSRV_FETCH_ASSOC)){
+    $idmovimiento = $row ["id"];
+    $autorizacion = $row ["jefe_autorizacion"];
+    $dias = $row ["dias_previos"];
+    if ($autorizacion == 2 && $dias > 22) {
+        $queryDelete = "DELETE FROM P1TXTVAC WHERE id= ?";
+        $params = array( $idmovimiento );
+        $stmt_borrar = sqlsrv_query( $con, $queryDelete, $params );
+        if( $stmt_borrar === false ) {
+           die( print_r( sqlsrv_errors(), true));
+       }
+       $rows_affected = sqlsrv_rows_affected( $stmt_borrar);
+       if( $rows_affected === false) {
+           die( print_r( sqlsrv_errors(), true));
+           $respuesta = array(
+            'estado' => 'error',
+            'informacion' => 'Error en la eliminación de los datos'
+            );                 
+       } elseif( $rows_affected == -1) {
+        $respuesta = array(
+            'estado' => 'error',
+            'informacion' => 'No hay informacion antigua para eliminar'
+            );
+    } else {
+        $respuesta = array(
+            'estado' => 'correcto',
+            'informacion' => 'Registroas Antiguos Eliminados'
+            );
     }
-    while ($row = sqlsrv_fetch_array( $stmt, SQLSRV_FETCH_ASSOC)){
-        $idmovimiento = $row ["id"];
-        $autorizacion = $row ["jefe_autorizacion"];
-        $dias = $row ["dias_previos"];
-        if ($autorizacion == 2 && $dias > 22) {
-            $queryDelete = "DELETE FROM P1TXTVAC WHERE id= ?";
-            $params = array( $idmovimiento );
-            $stmt_borrar = sqlsrv_query( $con, $queryDelete, $params );
-            if( $stmt_borrar === false ) {
-                 die( print_r( sqlsrv_errors(), true));
-            }
-            $rows_affected = sqlsrv_rows_affected( $stmt_borrar);
-            if( $rows_affected === false) {
-                 die( print_r( sqlsrv_errors(), true));
-                $respuesta = array(
-                    'estado' => 'error',
-                    'informacion' => 'Error en la eliminación de los datos'
-                    );                 
-            } elseif( $rows_affected == -1) {
-                $respuesta = array(
-                    'estado' => 'error',
-                    'informacion' => 'No hay informacion antigua para eliminar'
-                    );
-            } else {
-                $respuesta = array(
-                    'estado' => 'correcto',
-                    'informacion' => 'Registroas Antiguos Eliminados'
-                    );
-            }
-            sqlsrv_free_stmt( $stmt_borrar );            
-        }
-    $respuesta = array(
-        'estado' => 'correcto',
-        'informacion' => 'No hay informacion antigua para eliminar'
+    sqlsrv_free_stmt( $stmt_borrar );            
+}
+$respuesta = array(
+    'estado' => 'correcto',
+    'informacion' => 'No hay informacion antigua para eliminar'
     );        
-    }
+}
 
-    sqlsrv_free_stmt( $stmt );
+sqlsrv_free_stmt( $stmt );
 
-    echo json_encode( $respuesta );
+echo json_encode( $respuesta );
 }
 //ELIMINAR REGISTROS ANTIGUOS
 
@@ -357,32 +387,33 @@ if ($accion == 'eliminar_regviejos') {
 //CALCULAR VACACIONES
 if ($accion == 'vacaciones')
 {
+    // die(json_encode($_POST));
     $feriados = array(
     '1-1', // Año Nuevo (irrenunciable)
-    '10-4', // Viernes Santo (feriado religioso)
-    '11-4', // Sábado Santo (feriado religioso)
+    '5-2', //Dia de la bandera
+    '21-3', //Natalicio benito Juarez
     '1-5', // Día Nacional del Trabajo (irrenunciable)
-    '21-5', // Día de las Glorias Navales
-    '29-6', // San Pedro y San Pablo (feriado religioso)
-    '16-7', // Virgen del Carmen (feriado religioso)
-    '15-8', // Asunción de la Virgen (feriado religioso)
-    '19-9', // Dia Festivo De Prueba
-    '12-10', // Aniversario del Descubrimiento de América
-    '31-10', // Día Nacional de las Iglesias Evangélicas y Protestantes (feriado religioso)
-    '1-11', // Día de Todos los Santos (feriado religioso)
-    '8-12', // Inmaculada Concepción de la Virgen (feriado religioso)
-    '13-12', // elecciones presidencial y parlamentarias (puede que se traslade al domingo 13)
-    '25-12', // Natividad del Señor (feriado religioso) (irrenunciable)
-);
+    '25-12' // Natividad del Señor (feriado religioso) (irrenunciable)
+    );
     include '../function/connection.php';
     $fechaINI = $_POST['fechaINI'];
     $fechaFIN = $_POST['fechaFIN'];
     $razon = $_POST['razon'];
     $employeeID = $_POST['employeeID'];
+    $nombre_empleado = $_POST["n_empleado"];
+    $nombre_destinatario = $_POST["n_destinatario"];
+    $correo_destinatario = $_POST["c_destinatario"];    
     $NOW = date('Y-m-d');
     $param = 1;
     $tipo = 3;
-    $dias_habiles = DiasHabiles($fechaINI, $fechaFIN);
+    $nw = array();
+    $count = 0;
+    if ($fechaINI != $fechaFIN){
+        $dias_habiles = DiasHabiles($fechaINI, $fechaFIN);
+    }else{
+        $dias_habiles = diaHabil($fechaINI);
+    }
+    
     $cant = count($dias_habiles);
     try{
         for ($i=0; $i < $cant ; $i++)
@@ -391,7 +422,10 @@ if ($accion == 'vacaciones')
             $fecha = getdate($dia);
             $feriado = $fecha['mday'].'-'.$fecha['mon'];
             //EVALUAR SABADOS / DOMINGOS / DIAS FERIADOS
-            if (!(($fecha["wday"]==0 || $fecha["wday"]==6)||(in_array($feriado,$feriados))))
+            if (($fecha["wday"]==0 || $fecha["wday"]==6)||(in_array($feriado,$feriados))){
+                $nw[] = $fecha["mday"]."-".$fecha["mon"]."-".$fecha["year"]." ";
+            }
+            else if (!(($fecha["wday"]==0 || $fecha["wday"]==6)||(in_array($feriado,$feriados))))
             {
                 $fechaSQL = $fecha["year"]."-".$fecha["mon"]."-".$fecha["mday"];
                 $insert_vac = "INSERT INTO P1TXTVAC (employee,fecha,tipo,dias,emp_observaciones,crtd_user,lupd_datetime,lupd_user)
@@ -399,23 +433,29 @@ if ($accion == 'vacaciones')
                 $params = array( $employeeID,$fechaSQL,$tipo,$param,$razon,$employeeID,$NOW,$employeeID );
                 $stmt = sqlsrv_query( $con, $insert_vac, $params );
                 if( $stmt === false ) {
-                     die( print_r( sqlsrv_errors(), true));
-                }
-            }
-        }
-        $respuesta = array(
-            'estado' => 'correcto'
+                    die( print_r( sqlsrv_errors(), true));
+               }
+               $count++;
+           }
+       }
+       $respuesta = array(
+        'estado' => 'correcto',
+        'informacion' => $nw
         );
         $stmt = null;
         $conn = null;
-    }catch(PDOException $e) {
-            // En caso de un error, tomar la exepcion
-        $respuesta = array(
-            'estado' => 'error',
-            'log' => $e->getMessage()
+        $horas = '';
+        if($count != 0){
+            enviarCorreo ($correo_destinatario,$nombre_destinatario,$employeeID, $nombre_empleado, $accion, $razon, $fechaINI, $fechaFIN, $horas);
+        }
+   }catch(PDOException $e) {
+    // En caso de un error, tomar la exepcion
+    $respuesta = array(
+        'estado' => 'error',
+        'log' => $e->getMessage()
         );
-    }
-    echo json_encode($respuesta);
+}
+echo json_encode($respuesta);
 }
 
 function DiasHabiles($fecha_inicial,$fecha_final)
@@ -436,8 +476,54 @@ function DiasHabiles($fecha_inicial,$fecha_final)
     return $newArray;
 }
 
-function diasFeriados(){
+function diaHabil($fecha_inicial){
+    $newArray = array();
+    list($year,$mes,$dia) = explode("-",$fecha_inicial);
+    $ini = mktime(0, 0, 0, $mes , $dia, $year);
 
+    $newArray[] .=$ini;
+    return $newArray;
+}
+
+function enviarCorreo ($correo_destinatario,$nombre_destinatario,$employeeID, $nombre_empleado, $accion, $razon, $fechaINI, $fechaFIN, $detalle) 
+{
+    //ENVIO DE CORREO
+    // Here is the data we will be sending to the service
+  $envio_datos = array(
+    'correo_destinatario' => $correo_destinatario, 
+    'nombre_destinatario' => $nombre_destinatario, 
+    'employeeID' => $employeeID,
+    'tipo' => $accion,
+    'nombre_empleado' => $nombre_empleado,
+    'razon' => $razon,
+    'fechaINI' => $fechaINI,
+    'fechaFIN' => $fechaFIN,
+    'detalle' => $detalle
+    );  
+
+  // var_dump($envio_datos);
+
+  $curl = curl_init();
+      // $curl = curl_init();
+      // You can also set the URL you want to communicate with by doing this:
+      // $curl = curl_init('http://localhost/echoservice');
+
+      // We POST the data
+  curl_setopt($curl, CURLOPT_POST, 1);
+      // Set the url path we want to call
+  curl_setopt($curl, CURLOPT_URL, 'http://mexq.mx/devweb/webServices/envio_correo.php');  
+      // Make it so the data coming back is put into a string
+  curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+      // Insert the data
+  curl_setopt($curl, CURLOPT_POSTFIELDS, $envio_datos);
+
+      // You can also bunch the above commands into an array if you choose using: curl_setopt_array
+
+      // Send the request
+  $result = curl_exec($curl);
+      // Free up the resources $curl is using
+  curl_close($curl);
+        //ENVIO DE CORREO
 }
 
 ?>

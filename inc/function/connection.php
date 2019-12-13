@@ -2,7 +2,7 @@
 	function Connect_DB()
 	{
 	    $serverName = "MEXQ-SERVER4,1433";
-		$database = "MEXQAPPPr";
+		$database = "MEXQAPPTEMP";
 		$uid = "sa";
 		$pwd = "P@ssw0rd";
 	
@@ -11,7 +11,7 @@
 	}
 
 	$serverName = "MEXQ-SERVER4";
-	$connectionInfo = array("Database"=>"MEXQAppPr", "UID"=>"sa", "PWD"=>"P@ssw0rd", "CharacterSet"=>"UTF-8");
+	$connectionInfo = array("Database"=>"MEXQAPPTEMP", "UID"=>"sa", "PWD"=>"P@ssw0rd", "CharacterSet"=>"UTF-8");
 	$con = sqlsrv_connect($serverName, $connectionInfo);
 	
  ?>

@@ -29,3 +29,14 @@
 #alertaR { 
   display: none;
 }
+
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tdObservaciones {
+  word-wrap: break-word;
+  max-width: 1px;
+}

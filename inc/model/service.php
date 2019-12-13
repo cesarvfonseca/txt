@@ -2,12 +2,14 @@
 	$_SESSION["godLevel"] = 0;
 	$employee_id = $_SESSION["user1"];
 	$userType = "";
-	$selectQuery = "SELECT 
-					emp_status,employee,emp_name,em_id03,user1,manager1,manager2, em_id24,
-					(SELECT em_id03 FROM PJEMPLOY WHERE employee=(SELECT manager1 FROM PJEMPLOY WHERE employee= ?)) correo_jefe, * 
-					FROM PJEMPLOY 
+	$selectQuery = "SELECT emp_status,te.numero_nomina,te.nombre_largo,em_id03,user1,manager1,manager2, em_id24, 
+					(SELECT em_id03 FROM PJEMPLOY WHERE employee=(SELECT manager1 FROM PJEMPLOY WHERE employee= ?)) correo_jefe,
+					(SELECT emp_name FROM PJEMPLOY WHERE employee=(SELECT manager1 FROM PJEMPLOY WHERE employee= ?)) nombre_jefe
+					FROM PJEMPLOY AS pe
+					INNER JOIN tbempleados AS te
+					ON te.numero_nomina = pe.employee 
 					WHERE employee= ?";
-	$params = array( $employee_id, $employee_id );
+	$params = array( $employee_id, $employee_id, $employee_id );
     $stmt_user1 = sqlsrv_query( $con, $selectQuery, $params );
 
 	if( $stmt_user1 === false ) {
@@ -15,17 +17,19 @@
 	}
 
 	while( $obj = sqlsrv_fetch_object( $stmt_user1)) {
-      $userType = $obj -> em_id24;
-      $managerMail = trim($obj -> correo_jefe);
+		$userType = $obj -> em_id24;
+		$managerMail = trim($obj -> correo_jefe);
+		$managerName = ucwords(strtolower(trim($obj -> nombre_jefe)));
+		$employeeName = ucwords(strtolower(trim($obj -> nombre_largo)));
+		$employeeID = $obj -> numero_nomina;
 	}
     sqlsrv_free_stmt( $stmt_user1 );
 
     // REVISAR DEPARTAMENTO
-    $selectQueryDpto = "SELECT ui.badgenumber,d.deptname FROM 
-						userinfo ui 
-						INNER JOIN departments d
-						ON ui.defaultdeptid = d.deptid
-						WHERE badgenumber LIKE '%' + CONVERT(NVARCHAR, ?) + '%'";
+    $selectQueryDpto = "SELECT tc.nombre FROM tbempleados AS te 
+						INNER JOIN tbcelula AS tc
+						ON te.id_celula = tc.id_celula
+						WHERE te.numero_nomina = ?";
 	$params = array( $employee_id );
     $stmt_user3 = sqlsrv_query( $con, $selectQueryDpto, $params );
 
@@ -37,7 +41,7 @@
      die( print_r( sqlsrv_errors(), true));
 	}
 
-	$emp_depto = sqlsrv_get_field( $stmt_user3, 1);
+	$emp_depto = sqlsrv_get_field( $stmt_user3, 0);
     $emp_depto = ucwords(strtolower($emp_depto));
     sqlsrv_free_stmt( $stmt_user3 );
 
@@ -56,45 +60,45 @@
 
     //PANEL JEFE PENDIENTES
     $selectQuery_personal = "SELECT 
-							CASE
-							 WHEN tipo = 1
-								THEN 'TXT A FAVOR'
-							 WHEN tipo = 2
-								THEN 'TXT EN CONTRA'
-							 WHEN tipo = 3
-								THEN 'VACACIONES'
-							 END AS tipo_incidencia,
-							jefe_autorizacion,
 								CASE
-									WHEN jefe_autorizacion=0
-										THEN 'Pendiente'
-									WHEN jefe_autorizacion=1
-										THEN 'Autorizado'	
-									ELSE 'No Autorizado'
-								END as voboJefe,
-							rh_vobo,
-								CASE
-									WHEN rh_vobo=0
-										THEN 'Pendiente'
-									WHEN rh_vobo=1
-										THEN 'Autorizado'
-									ELSE 'No Autorizado'
-								END as voboRH,
-							txt.id,
-							txt.jefe_autorizacion,
-							txt.employee,
-							txt.fecha,
-							txt.tipo,
-							txt.horas,
-							txt.dias,
-							txt.emp_observaciones,
-							txt.jefe_observaciones,
-							txt.rh_observaciones,
-							pe.emp_name
-							FROM P1TXTVAC txt
-							INNER JOIN PJEMPLOY pe
-							ON txt.employee = pe.employee
-							WHERE pe.manager1= ? ORDER BY fecha ASC;";
+								WHEN tipo = 1
+									THEN 'TXT A FAVOR'
+								WHEN tipo = 2
+									THEN 'TXT EN CONTRA'
+								WHEN tipo = 3
+									THEN 'VACACIONES'
+								END AS tipo_incidencia,
+								jefe_autorizacion,
+									CASE
+										WHEN jefe_autorizacion=0
+											THEN 'Pendiente'
+										WHEN jefe_autorizacion=1
+											THEN 'Autorizado'	
+										ELSE 'No Autorizado'
+									END as voboJefe,
+								rh_vobo,
+									CASE
+										WHEN rh_vobo=0
+											THEN 'Pendiente'
+										WHEN rh_vobo=1
+											THEN 'Autorizado'
+										ELSE 'No Autorizado'
+									END as voboRH,
+								txt.id,
+								txt.jefe_autorizacion,
+								txt.employee,
+								txt.fecha,
+								txt.tipo,
+								txt.horas,
+								txt.dias,
+								txt.emp_observaciones,
+								txt.jefe_observaciones,
+								txt.rh_observaciones,
+								pe.emp_name
+								FROM P1TXTVAC txt
+								INNER JOIN PJEMPLOY pe
+								ON txt.employee = pe.employee
+								WHERE pe.manager1= ? ORDER BY fecha ASC;";
 
 	$params = array( $employee_id );
     $stmt_manager_panel = sqlsrv_query( $con, $selectQuery_personal, $params );
@@ -105,45 +109,44 @@
 
 	//VER PANEL DE USUARIO 
 	$selectQuery = "SELECT
-					employee,
-					CASE
-					 WHEN tipo = 1
-						THEN 'TXT A FAVOR'
-					 WHEN tipo = 2
-						THEN 'TXT EN CONTRA'
-					 WHEN tipo = 3
-						THEN 'VACACIONES'
-					 END AS tipo_incidencia,
-					CASE
-						WHEN jefe_autorizacion=0
-							THEN 'Pendiente'
-						WHEN jefe_autorizacion=1
-							THEN 'Autorizado'
-						ELSE 'No Autorizado'
-					END as voboJefe,
-					CASE
-						WHEN rh_vobo=0
-							THEN 'Pendiente'
-						WHEN rh_vobo=1
-							THEN 'Autorizado'
-						ELSE 'No Autorizado'
-					END as voboRH,
-					 fecha,
-					 id,
-					 tipo,
-					 horas,
-					 dias,
-					 emp_observaciones,
-					 jefe_observaciones,
-					 rh_observaciones
-					FROM P1TXTVAC WHERE employee = ? ORDER BY fecha";
+						employee,
+						CASE
+						WHEN tipo = 1
+							THEN 'TXT A FAVOR'
+						WHEN tipo = 2
+							THEN 'TXT EN CONTRA'
+						WHEN tipo = 3
+							THEN 'VACACIONES'
+						END AS tipo_incidencia,
+						CASE
+							WHEN jefe_autorizacion=0
+								THEN 'Pendiente'
+							WHEN jefe_autorizacion=1
+								THEN 'Autorizado'
+							ELSE 'No Autorizado'
+						END as voboJefe,
+						CASE
+							WHEN rh_vobo=0
+								THEN 'Pendiente'
+							WHEN rh_vobo=1
+								THEN 'Autorizado'
+							ELSE 'No Autorizado'
+						END as voboRH,
+						fecha,
+						id,
+						tipo,
+						horas,
+						dias,
+						emp_observaciones,
+						jefe_observaciones,
+						rh_observaciones
+						FROM P1TXTVAC WHERE employee = ? ORDER BY fecha";
 	$params = array( $employee_id );
     $stmt_emp_panel = sqlsrv_query( $con, $selectQuery, $params );
 
     if( $stmt_emp_panel === false ) {
 	     die( print_r( sqlsrv_errors(), true));
 	}
-
 
 	//VER PANEL DE USUARIO 
 
@@ -152,22 +155,22 @@
     $total_txt_favor=0;
     $total_txt_contra=0;
     $totales = "SELECT
-				tipo,
-				CASE
-					WHEN tipo = 1
-					THEN SUM(horas)
-				END AS total_txt_favor, 
-				CASE
-					WHEN tipo = 2
-					THEN SUM(horas) 
-				END AS total_txt_contra,
-				CASE
-					WHEN tipo = 3
-					THEN SUM(dias) 
-				END AS total_vacaciones
-				FROM P1TXTVAC 
-				WHERE employee = ? AND jefe_autorizacion = 1
-				GROUP BY tipo;";
+					tipo,
+					CASE
+						WHEN tipo = 1
+						THEN SUM(horas)
+					END AS total_txt_favor, 
+					CASE
+						WHEN tipo = 2
+						THEN SUM(horas) 
+					END AS total_txt_contra,
+					CASE
+						WHEN tipo = 3
+						THEN SUM(dias) 
+					END AS total_vacaciones
+					FROM P1TXTVAC 
+					WHERE employee = ? AND jefe_autorizacion = 1
+					GROUP BY tipo;";
 
 	$params = array( $employee_id );
     $stmt_txt_total = sqlsrv_query( $con, $totales, $params );
