@@ -44,7 +44,7 @@
 					<th>Nomina</th>
 					<th>Empleado</th>
 					<th>Tipo</th>
-					<th class="d-none">Motivo</th>
+					<th>Motivo</th>
 					<th>Comentario</th>
 					<th>Fecha</th>
 					<th>Entrada</th>

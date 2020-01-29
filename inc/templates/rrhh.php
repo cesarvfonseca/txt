@@ -47,7 +47,7 @@
                     <th>Empleado</th>
                     <th>Departamento</th>
                     <th>Tipo</th>
-                    <th class="d-none">Motivo</th>
+                    <th>Motivo</th>
 					<th>Comentario</th>
                     <th>Fecha</th>
                     <th>Entrada</th>

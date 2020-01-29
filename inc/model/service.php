@@ -167,6 +167,10 @@
 					CASE
 						WHEN tipo = 3
 						THEN SUM(dias) 
+					END AS dias_gozados,
+					CASE
+						WHEN tipo = 3
+						THEN SUM(vac_anio)-SUM(dias)
 					END AS total_vacaciones
 					FROM P1TXTVAC 
 					WHERE employee = ? AND jefe_autorizacion = 1
@@ -183,6 +187,7 @@
 
 	    $total_txt_favor .= $row['total_txt_favor'];
 	    $total_txt_contra .= $row['total_txt_contra'];
+	    $dias_gozados .= $row['dias_gozados'];
 	    $total_vacaciones .= $row['total_vacaciones'];
 
 	}

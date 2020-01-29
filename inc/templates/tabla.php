@@ -11,9 +11,10 @@
 					<th>Horas Positivas Autorizadas</th>
 					<th>Horas Negativas Autorizadas</th>
 					<th>Saldo de Horas</th>
-					<th>Vacaciones Autorizadas</th>
+					<th>Dias Gozados</th>
+					<th>Saldo Vacaciones</th>
 				</thead>
-				<tbody id="tablaPersonal">
+				<tbody id="tablaPersonalJefe">
 
 				</tbody>
 			</table>

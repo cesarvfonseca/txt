@@ -8,16 +8,17 @@
 		$employeeID = $_POST['employeeID'];
 		// die(json_encode($_POST));
 	include '../function/connection.php';
-	//$query = "EXEC p1solicitudEmpleado @numero_nomina = ?, @fecha_ini = ?, @fecha_fin = ?";
+	// $query = "EXEC p1solicitudEmpleado @numero_nomina = ?, @fecha_ini = ?, @fecha_fin = ?";
 	$query = "EXEC p1solicitudEmpleado ?,?,?";
-	$params = array($employeeID,$fechaINI, $fechaFIN);
+
+	$params = array($employeeID, $fechaINI, $fechaFIN);
 
 	$stmt = sqlsrv_query( $con, $query, $params);
 
 	$result = array();
 
 	if( $stmt === false) {
-		die( print_r( sqlsrv_errors(), true) );
+		// die( print_r( sqlsrv_errors(), true) );
 		$respuesta = array(
 			'estado' => 'error',
 			'tipo' => 'error',
@@ -135,10 +136,13 @@
 		// die(json_encode($_POST));
 		include '../function/connection.php';
 
-		$query = "SELECT code_value,code_value_desc FROM PJCODE WHERE code_type = 'RI' ORDER BY crtd_datetime";
+		$codigo = $_POST['codigo'];
+
+		$query = "SELECT code_value,code_value_desc FROM PJCODE WHERE code_type = ? ORDER BY crtd_datetime";
+
+		$params = array( $codigo );
+		$stmt = sqlsrv_query( $con, $query, $params);
                 
-		$stmt = sqlsrv_query( $con, $query);
-		
 		$result = array();
 		
 		if( $stmt === false) {
@@ -179,7 +183,8 @@
 					SUM(CASE WHEN txt.tipo = '1' THEN txt.horas ELSE 0 END) AS txt_favor,
 					SUM(CASE WHEN txt.tipo = '2' THEN txt.horas ELSE 0 END) AS txt_contra,
 					SUM(CASE WHEN txt.tipo = '1' THEN txt.horas ELSE 0 END)-SUM(CASE WHEN txt.tipo = '2' THEN txt.horas ELSE 0 END) AS txt_saldo,
-					SUM(CASE WHEN txt.tipo = '3' THEN txt.dias ELSE 0 END) AS dias
+					SUM(CASE WHEN txt.tipo = '3' THEN txt.dias ELSE 0 END) AS dias,
+					SUM(CASE WHEN txt.tipo = '3' THEN txt.vac_anio ELSE 0 END)-SUM(CASE WHEN txt.tipo = '3' THEN txt.dias ELSE 0 END) AS diasTotales
 					FROM P1TXTVAC AS txt
 					INNER JOIN PJEMPLOY AS pe
 					ON txt.employee = pe.employee

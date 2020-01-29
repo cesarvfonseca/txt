@@ -42,7 +42,7 @@
 			<table id="panelEmpleado" class="table table-striped table-bordered table-hover text-left table-sm">
 				<thead class="text-center">
 					<th>Tipo</th>
-					<th class="d-none">Motivo</th>
+					<th>Motivo</th>
 					<th>Comentario</th>
 					<th>Fecha</th>
 					<th>Entrada</th>

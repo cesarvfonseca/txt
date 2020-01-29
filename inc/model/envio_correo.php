@@ -16,6 +16,10 @@
 		$asunto = "Tiempo en contra";
 	else if ($tipo == 'vacaciones')
 		$asunto = "Vacaciones";
+	else if ($tipo == 'pcg')
+		$asunto = "Permiso con Goce";
+	else if ($tipo == 'psg')
+		$asunto = "Permiso sin Goce";
 	
 	$headers = 'Content-Type: text/html; charset=UTF-8';
 	if ($tipo == 'vacaciones') {

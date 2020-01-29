@@ -102,7 +102,7 @@ if ($accion == 'salir')
     echo json_encode($respuesta);
 }
 
-if ($accion == 'txt' || $accion == 'txtc' || $accion == 'salidaTrabajo')
+if ($accion == 'txt' || $accion == 'txtc' || $accion == 'salidaTrabajo' || $accion == 'pcg' || $accion == 'psg')
 {
     //die(json_encode($_POST));
     include '../function/connection.php';
@@ -118,10 +118,14 @@ if ($accion == 'txt' || $accion == 'txtc' || $accion == 'salidaTrabajo')
     try{
         if ($accion == 'txt'){
             $tipo = 1;
-        }else if($accion == 'txtc'){
+        } else if($accion == 'txtc'){
             $tipo = 2;
-        }else{
+        } else if($accion == 'salidaTrabajo'){
             $tipo = 5;
+        } else if($accion == 'pcg'){
+            $tipo = 4;
+        } else if($accion == 'psg'){
+            $tipo = 6;
         }
         $qryValidator = "SELECT * FROM P1TXTVAC WHERE employee = ? AND fecha = ? AND tipo = ?";
         $params_ = array( $employeeID, $fecha, $tipo);

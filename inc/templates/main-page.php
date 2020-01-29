@@ -30,7 +30,8 @@
 		      <th scope="col">Horas Positivas</th>
 		      <th scope="col">Horas Negativas</th>
 		      <th scope="col">Total de Horas</th>
-		      <th scope="col">Dias de vacaciones</th>
+		      <th scope="col">Dias gozados</th>
+		      <th scope="col">Saldo Vacaciones</th>
 		    </tr>
   		</thead>
   		<tbody style="background: #f8f9fa !important">
@@ -39,6 +40,7 @@
   				<td><p class="h3"><?php echo number_format($total_txt_contra,1); ?></p></td>
 				  <td><p class="h3"><?php echo number_format($total_txt_favor-$total_txt_contra,1); ?></p></td>
 				  <input id="saldoHoras" type="hidden" value="<?php echo number_format($total_txt_favor-$total_txt_contra,1); ?>">
+  				<td><p class="h3"><?php echo number_format($dias_gozados,0); ?></p></td>
   				<td><p class="h3"><?php echo number_format($total_vacaciones,0); ?></p></td>
   			</tr>
   		</tbody>
@@ -55,6 +57,8 @@
 	      <option value="txtc">Tiempo por tiempo en contra</option>
 	      <option value="vacaciones">Vacaciones</option>
 	      <option value="salida-trabajo">Salidas por Trabajo</option>
+	      <option value="pcg">Permiso Con Goce</option>
+	      <option value="psg">Permiso Sin Goce</option>
 	      <option value="panel-usuario">Panel de incidencias</option>
 	      <?php if ($_SESSION["godLevel"]==1): ?>
 	      	<option value="panel-personal">Incidencias personal</option>
@@ -107,6 +111,18 @@
 <div class="row" id="panel-salidaTrabajo">
 	<div class="col-md-12">
 		<?php include ('inc/templates/salida-trabajo.php');  ?>
+	</div>
+</div>
+
+<div class="row" id="panel-pcg">
+	<div class="col-md-12">
+		<?php include ('inc/templates/pcg.php');  ?>
+	</div>
+</div>
+
+<div class="row" id="panel-psg">
+	<div class="col-md-12">
+		<?php include ('inc/templates/psg.php');  ?>
 	</div>
 </div>
 

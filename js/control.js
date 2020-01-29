@@ -9,6 +9,8 @@ $('#vacacionesDIV').hide();
 $('#panel-usuarioDIV').hide();
 $('#panel-personalDIV').hide();
 $('#panel-salidaTrabajo').hide();
+$('#panel-pcg').hide();
+$('#panel-psg').hide();
 $('#defaultDIV').show();
 
 //EXPORTAR TABLA A EXCEL
@@ -55,6 +57,14 @@ function eventListeners_() {
         document.querySelector('.nuevo-vacaciones').addEventListener('click', enviarVACACIONES);
     }
 
+    if (document.querySelector('.nuevo-txtpcg') !== null) {
+        document.querySelector('.nuevo-txtpcg').addEventListener('click', enviarPCG);
+    }
+
+    if (document.querySelector('.nuevo-txtpsg') !== null) {
+        document.querySelector('.nuevo-txtpsg').addEventListener('click', enviarPSG);
+    }
+
 }
 
 switch (seccionActual) {
@@ -84,7 +94,7 @@ switch (seccionActual) {
                     //console.log(respuesta);
                     if (respuesta.estado === 'correcto') {
                         var informacion = respuesta.informacion;
-                        console.log(informacion);
+                        // console.log(informacion);
                         for (var i in informacion) {
                             tablaNominas(informacion[i]);
                             $('#alertaR').hide();
@@ -143,7 +153,6 @@ $('#salida-trabajo').click(function (e) {
         nombre_empleado = $('#employee_name').val(),
         nombre_destinatario = $('#txtNamet').val(),
         correo_destinatario = $('#txtMailt').val();
-    console.log(tipo)
     if (razon === '') {
         swal({
             type: 'error',
@@ -169,7 +178,7 @@ $('#salida-trabajo').click(function (e) {
         xmlhr.onload = function () {
             if (this.status === 200) {
                 var respuesta = JSON.parse(xmlhr.responseText);
-                console.log(respuesta);
+                // console.log(respuesta);
                 if (respuesta.estado === 'correcto') {
                     swal({
                         title: 'Guardado exitoso!',
@@ -327,7 +336,7 @@ function enviarTXT(e) {
         xmlhr.onload = function () {
             if (this.status === 200) {
                 var respuesta = JSON.parse(xmlhr.responseText);
-                console.log(respuesta);
+                // console.log(respuesta);
                 if (respuesta.estado === 'correcto') {
                     swal({
                         title: 'Guardado exitoso!',
@@ -371,7 +380,7 @@ function enviarTXTC(e) {
     document.querySelector('.nuevo-txtc').removeEventListener('click', enviarTXTC);
     var fecha = document.querySelector('#txtFechac').value,
         horas = document.querySelector('#txtHorasc').value,
-        motivo = document.querySelector('#txtMotivoC').value,
+        motivo = '',
         razon = document.querySelector('#txtRazonc').value,
         employeeID = document.querySelector('#employeeIDc').value,
         tipo = document.querySelector('#typec').value,
@@ -385,7 +394,7 @@ function enviarTXTC(e) {
         swal({
             type: 'error',
             title: 'Horas en contra excedidas!',
-            text: 'Tu saldo de horas negativas es mayor a las permitidas, no puedes generar la solicitur'
+            text: 'Tu saldo de horas negativas es mayor a las permitidas, no puedes generar la solicitud'
         })
     } else {
         if (fecha === '' || horas === '' || razon === '') {
@@ -415,7 +424,7 @@ function enviarTXTC(e) {
             xmlhr.onload = function () {
                 if (this.status === 200) {
                     var respuesta = JSON.parse(xmlhr.responseText);
-                    console.log(respuesta);
+                    // console.log(respuesta);
                     if (respuesta.estado === 'correcto') {
                         swal({
                             title: 'Guardado exitoso!',
@@ -454,94 +463,217 @@ function enviarTXTC(e) {
     }
 }
 
+function enviarPCG(e) {
+    e.preventDefault();
+    document.querySelector('.nuevo-txtpcg').removeEventListener('click', enviarPCG);
+    var fecha = document.querySelector('#txtFechapcg').value,
+        horas = document.querySelector('#txtHoraspcg').value,
+        motivo = document.querySelector('#txtMotivopcg').value,
+        razon = document.querySelector('#txtRazonpcg').value,
+        employeeID = document.querySelector('#employeeIDpcg').value,
+        tipo = document.querySelector('#typepcg').value,
+        nombre_empleado = document.querySelector('#employee_name').value,
+        nombre_destinatario = document.querySelector('#txtNamepcg').value,
+        correo_destinatario = document.querySelector('#txtMailpcg').value;
+    console.log(nombre_empleado + ' ' + nombre_destinatario + ' ' + correo_destinatario + ' ' + tipo + ' ' + razon + ' ' + motivo);
+
+    if (fecha === '' || horas === '' || razon === '') {
+            swal({
+                type: 'error',
+                title: 'Error!',
+                text: 'Todos los campos son obligatorios!'
+            })
+        } else {
+            var datosPCG = new FormData();
+            datosPCG.append('fecha', fecha);
+            datosPCG.append('horas', horas);
+            datosPCG.append('motivo', motivo);
+            datosPCG.append('razon', razon);
+            datosPCG.append('employeeID', employeeID);
+            datosPCG.append('n_empleado', nombre_empleado);
+            datosPCG.append('n_destinatario', nombre_destinatario);
+            datosPCG.append('c_destinatario', correo_destinatario);
+            datosPCG.append('accion', tipo);
+            console.log(tipo);
+
+            // CREAR LA INSTANCIA AJAX PARA EL LLAMADO
+            var xmlPCG = new XMLHttpRequest();
+
+            //ABRIR LA CONEXION
+            xmlPCG.open('POST', 'inc/model/control.php', true);
+            // VERIFICAR LA RESPUESTA DEL SERVICIO
+            xmlPCG.onload = function () {
+                if (this.status === 200) {
+                    var respuesta = JSON.parse(xmlPCG.responseText);
+                    console.log(respuesta);
+                    if (respuesta.estado === 'correcto') {
+                        swal({
+                            title: 'Guardado exitoso!',
+                            text: 'Guardado de la información exitoso!',
+                            type: 'success'
+                        })
+                            .then(resultado => {
+                                if (resultado.value) {
+                                    location.reload();
+                                }
+                            })
+                    } else if (respuesta.estado === 'incorrecto') {
+                        swal({
+                            title: 'Error en proceso!',
+                            text: respuesta.mensaje,
+                            type: 'warning'
+                        })
+                            .then(resultado => {
+                                if (resultado.value) {
+                                    location.reload();
+                                }
+                            })
+                    } else {
+                        // Hubo un error
+                        swal({
+                            title: 'Error!',
+                            text: 'Hubo un error',
+                            type: 'error'
+                        })
+                    }
+                } else {
+                    console.log(500);
+                }
+            }
+            // Enviar la petición
+            xmlPCG.send(datosPCG);
+        }
+}
+
+function enviarPSG(e) {
+    e.preventDefault();
+    document.querySelector('.nuevo-txtpsg').removeEventListener('click', enviarPSG);
+    var fecha = document.querySelector('#txtFechapsg').value,
+        horas = document.querySelector('#txtHoraspsg').value,
+        motivo = '',
+        razon = document.querySelector('#txtRazonpsg').value,
+        employeeID = document.querySelector('#employeeIDpsg').value,
+        tipo = document.querySelector('#typepsg').value,
+        nombre_empleado = document.querySelector('#employee_name').value,
+        nombre_destinatario = document.querySelector('#txtNamepsg').value,
+        correo_destinatario = document.querySelector('#txtMailpsg').value;
+    console.log(nombre_empleado + ' ' + nombre_destinatario + ' ' + correo_destinatario + ' ' + tipo + ' ' + razon + ' ' + motivo);
+
+    if (fecha === '' || horas === '' || razon === '') {
+            swal({
+                type: 'error',
+                title: 'Error!',
+                text: 'Todos los campos son obligatorios!'
+            })
+        } else {
+            var datosPSG = new FormData();
+            datosPSG.append('fecha', fecha);
+            datosPSG.append('horas', horas);
+            datosPSG.append('motivo', motivo);
+            datosPSG.append('razon', razon);
+            datosPSG.append('employeeID', employeeID);
+            datosPSG.append('n_empleado', nombre_empleado);
+            datosPSG.append('n_destinatario', nombre_destinatario);
+            datosPSG.append('c_destinatario', correo_destinatario);
+            datosPSG.append('accion', tipo);
+            console.log(tipo);
+
+            // CREAR LA INSTANCIA AJAX PARA EL LLAMADO
+            var xmlPSG = new XMLHttpRequest();
+
+            //ABRIR LA CONEXION
+            xmlPSG.open('POST', 'inc/model/control.php', true);
+            // VERIFICAR LA RESPUESTA DEL SERVICIO
+            xmlPSG.onload = function () {
+                if (this.status === 200) {
+                    var respuesta = JSON.parse(xmlPSG.responseText);
+                    console.log(respuesta);
+                    if (respuesta.estado === 'correcto') {
+                        swal({
+                            title: 'Guardado exitoso!',
+                            text: 'Guardado de la información exitoso!',
+                            type: 'success'
+                        })
+                            .then(resultado => {
+                                if (resultado.value) {
+                                    location.reload();
+                                }
+                            })
+                    } else if (respuesta.estado === 'incorrecto') {
+                        swal({
+                            title: 'Error en proceso!',
+                            text: respuesta.mensaje,
+                            type: 'warning'
+                        })
+                            .then(resultado => {
+                                if (resultado.value) {
+                                    location.reload();
+                                }
+                            })
+                    } else {
+                        // Hubo un error
+                        swal({
+                            title: 'Error!',
+                            text: 'Hubo un error',
+                            type: 'error'
+                        })
+                    }
+                } else {
+                    console.log(500);
+                }
+            }
+            // Enviar la petición
+            xmlPSG.send(datosPSG);
+        }
+}
+
 function getComboA(selectObject) {
     var value = selectObject.value;
+    $('#txtDIV').hide();
+    $('#txtcDIV').hide();
+    $('#vacacionesDIV').hide();
+    $('#defaultDIV').hide();
+    $('#panel-personalDIV').hide();
+    $('#panel-usuarioDIV').hide();
+    $('#tabla-personalDIV').hide();
+    $('#panel-salidaTrabajo').hide();
+    $('#panel-psg').hide();
+    $('#panel-pcg').hide();
+    
     if (value == 'txt') {
         $('#txtDIV').show();
-        $('#txtcDIV').hide();
-        $('#vacacionesDIV').hide();
-        $('#defaultDIV').hide();
-        $('#panel-personalDIV').hide();
-        $('#panel-usuarioDIV').hide();
-        $('#tabla-personalDIV').hide();
-        $('#panel-salidaTrabajo').hide();
         cargarMotivos();
         console.log('VALOR TXT SELECCIONADO');
     }
     else if (value == 'txtc') {
-        $('#txtDIV').hide();
         $('#txtcDIV').show();
-        $('#vacacionesDIV').hide();
-        $('#defaultDIV').hide();
-        $('#panel-personalDIV').hide();
-        $('#panel-usuarioDIV').hide();
-        $('#tabla-personalDIV').hide();
-        $('#panel-salidaTrabajo').hide();
-        cargarMotivos();
         console.log('VALOR TXTC SELECCIONADO');
     }
     else if (value == 'salida-trabajo') {
-        $('#txtDIV').hide();
-        $('#txtcDIV').hide();
-        $('#vacacionesDIV').hide();
-        $('#defaultDIV').hide();
-        $('#panel-personalDIV').hide();
-        $('#panel-usuarioDIV').hide();
-        $('#tabla-personalDIV').hide();
         $('#panel-salidaTrabajo').show();
         console.log('VALOR SALIDAS POR TRABAJO');
     }
     else if (value == 'vacaciones') {
-        $('#txtDIV').hide();
-        $('#txtcDIV').hide();
         $('#vacacionesDIV').show();
-        $('#defaultDIV').hide();
-        $('#panel-personalDIV').hide();
-        $('#panel-usuarioDIV').hide();
-        $('#tabla-personalDIV').hide();
-        $('#panel-salidaTrabajo').hide();
         console.log('VALOR VACACIONES SELECCIONADO');
     } else if (value == 'panel-usuario') {
-        $('#txtDIV').hide();
-        $('#txtcDIV').hide();
-        $('#vacacionesDIV').hide();
         $('#panel-usuarioDIV').show();
-        $('#panel-personalDIV').hide();
-        $('#defaultDIV').hide();
-        $('#tabla-personalDIV').hide();
-        $('#panel-salidaTrabajo').hide();
         console.log('VALOR PANEL SELECCIONADO');
     } else if (value == 'panel-personal') {
-        $('#txtDIV').hide();
-        $('#txtcDIV').hide();
-        $('#vacacionesDIV').hide();
-        $('#panel-usuarioDIV').hide();
         $('#panel-personalDIV').show();
-        $('#defaultDIV').hide();
-        $('#tabla-personalDIV').hide();
-        $('#panel-salidaTrabajo').hide();
         console.log('VALOR PANEL PERSONAL SELECCIONADO');
     } else if (value == 'tabla-personal') {
         let nomina_actvo = $('#employeeID').val();
-        $('#txtDIV').hide();
-        $('#txtcDIV').hide();
-        $('#vacacionesDIV').hide();
-        $('#panel-usuarioDIV').hide();
-        $('#panel-personalDIV').hide();
-        $('#defaultDIV').hide();
         $('#tabla-personalDIV').show();
-        $('#panel-salidaTrabajo').hide();
         mostrarTablaPersonal(nomina_actvo);
         console.log('VALOR TABLA PERSONAL SELECCIONADO');
+    } else if (value == 'psg'){
+        $('#panel-psg').show();
+    } else if (value == 'pcg'){
+        $('#panel-pcg').show();
+        cargarMotivosPCG();
     } else if (value == 'non') {
-        $('#txtDIV').hide();
-        $('#tabla-personalDIV').hide();
-        $('#txtcDIV').hide();
-        $('#vacacionesDIV').hide();
-        $('#panel-usuarioDIV').hide();
-        $('#panel-personalDIV').hide();
         $('#defaultDIV').show();
-        $('#panel-salidaTrabajo').hide();
         console.log('NINGUN PANEL SELECCIONADO');
     }
 }
@@ -551,7 +683,26 @@ let cargarMotivos = () => {
     $.ajax({
         type: 'POST',
         url: 'inc/model/fetch.php',
-        data: { accion: 'obtenerMotivos' },
+        data: { accion: 'obtenerMotivos', codigo: 'TXTF' },
+        success: function (response) {
+            let respuesta = JSON.parse(response);
+            //console.log(respuesta);
+            let motivos = respuesta.informacion,
+                campo = '';
+            for (var i in motivos) {
+                campo += '<option value="' + motivos[i].code_value + '">' + motivos[i].code_value_desc + '</option>';
+            }
+            txtMotivos.html(campo);
+        }
+    });
+}
+
+let cargarMotivosPCG = () => {
+    let txtMotivos = $('.txtMotivo');
+    $.ajax({
+        type: 'POST',
+        url: 'inc/model/fetch.php',
+        data: { accion: 'obtenerMotivos', codigo: 'PCG' },
         success: function (response) {
             let respuesta = JSON.parse(response);
             //console.log(respuesta);
@@ -567,13 +718,14 @@ let cargarMotivos = () => {
 
 //FUNCION MOSTRAR DATOS TABLA EMPLEADOS
 let mostrarTablaPersonal = (numero_nomina) => {
-    $('#tablaPersonal').empty();
+    $('#tablaPersonalJefe').empty();
     $.ajax({
         type: 'POST',
         url: 'inc/model/fetch.php',
         data: { accion: 'tabla-personal', param: numero_nomina },
         success: function (response) {
             var respuesta = JSON.parse(response);
+            // console.log(respuesta);
             if (respuesta.estado === 'correcto') {
                 var datos = respuesta.informacion.length;
                 var informacion = respuesta.informacion;
@@ -592,13 +744,14 @@ let mostrarTablaPersonal = (numero_nomina) => {
 
     let tablaPersonal = (rowInfo) => {
         var row = $("<tr>");
-        $("#tablaPersonal").append(row); //this will append tr element to table... keep its reference for a while since we will add cels into it id_empleado
+        $("#tablaPersonalJefe").append(row); //this will append tr element to table... keep its reference for a while since we will add cels into it id_empleado
         row.append($("<td>" + rowInfo.employee + " </td>"));
         row.append($("<td>" + rowInfo.nombre_largo + " </td>"));
         row.append($("<td>" + rowInfo.txt_favor + " </td>"));
         row.append($("<td>" + rowInfo.txt_contra + " </td>"));
         row.append($("<td>" + rowInfo.txt_saldo + " </td>"));
         row.append($("<td>" + rowInfo.dias + "</td>"));
+        row.append($("<td>" + rowInfo.diasTotales + "</td>"));
     }
 }
 
@@ -704,7 +857,7 @@ function eliminarRegistros(btnEliminar) {
                             'success'
                         )
                         btnEliminar.parents("tr").remove();
-                        console.log(respuesta);
+                        // console.log(respuesta);
                     } else if (respuesta.estado === 'incorrecto') {
                         var informacion = respuesta.informacion;
                         swal(
@@ -748,7 +901,7 @@ function eliminar_registrosViejos(args) {
                 var informacion = respuesta.informacion;
                 // console.log('DESDE PHP: ' + informacion);
             }
-        } empty
+        }
     }
     xmlhr.send(eliminar_registros_viejos);
 }
@@ -773,9 +926,9 @@ $('#btnRangoUsuario').unbind().click(function (e) {
     xmlhr.onload = function () {
         if (this.status === 200) {
             var respuesta = JSON.parse(xmlhr.responseText);
+            // console.log(respuesta);
             if (respuesta.estado === 'correcto') {
                 var informacion = respuesta.informacion;
-                // console.log(informacion);
                 for (var i in informacion) {
                     drawRow(informacion[i]);
                     $('#alerta').hide();
@@ -804,12 +957,18 @@ function drawRow(rowData) {
     var row = $("<tr />");
     $("#bodyTable").append(row); //this will append tr element to table... keep its reference for a while since we will add cels into it
     //COLUMNA TIPO
-    row.append($("<td class='tipo_incidencia'><b>" + rowData.tipo_incidencia + "</td>"));
+    row.append($("<td class='tipo_incidencia'><b>" + rowData.tipo_incidencia + "</td>"))
     //COLUMNA TIPO
     row.append($("<td class='d-none'>N/A</td>"));
-    //COLUMNA COMENTARIO
-    row.append($("<td class='tdObservaciones'><div>" + rowData.emp_observaciones + "</div></td>"));
-    //COLUMNA FECHA
+    //COLUMNA MOTIVO
+    row.append($("<td><div>" + rowData.motivo  + "</div></td>"));
+    // DIAS AGREGADOS POR ANUALIDAD
+    if (rowData.tipo_incidencia === 'DIAS VACACIONES'){
+        row.append($("<td><div>" + rowData.emp_observaciones + ' - Dias asignados: ' + rowData.vac_anio + "</div></td>"));
+    } else {
+        row.append($("<td class='tdObservaciones'><div>" + rowData.emp_observaciones + "</div></td>"));
+    }
+    //COLUMNA FECHA      
     row.append($("<td>" + rowData.fecha.date.substring(0, 10) + "</td>"));
     //COLUMNA HORAS
     if (rowData.tipo !== 3) {
@@ -884,7 +1043,7 @@ $('#btnRangoJefe').unbind().click(function (e) {
         empleado_aut = $('#employeeID').val(),
         accion = 'consulta_jefe';
 
-    console.log('FI ' + fechaInicial + 'FF ' + fechafinal + 'EID ' + employeeID + ' ' + accion);
+    // console.log('FI ' + fechaInicial + 'FF ' + fechafinal + 'EID ' + employeeID + ' ' + accion);
     $('#tablaPersonal').empty();
     var consulta_rango = new FormData();
     consulta_rango.append('fechaINI', fechaInicial);
@@ -898,10 +1057,10 @@ $('#btnRangoJefe').unbind().click(function (e) {
     xmlhr.onload = function () {
         if (this.status === 200) {
             var respuesta = JSON.parse(xmlhr.responseText);
-            console.log(respuesta);
+            // console.log(respuesta);
             if (respuesta.estado === 'correcto') {
                 var informacion = respuesta.informacion;
-                console.log(informacion);
+                // console.log(informacion);
                 for (var i in informacion) {
                     tablaPersonal(informacion[i]);
                     $('#alertaM').hide();
@@ -953,6 +1112,8 @@ function tablaPersonal(rowInfo) {
     row.append($("<td class='tipo_incidencia'><b>" + rowInfo.tipo_incidencia + "</td>"));
     //COLUMNA MOTIVO EMPLEADO
     row.append($("<td class='d-none'>N/A</td>"));
+    //COLUMNA MOTIVO
+    row.append($("<td><div>" + rowData.motivo  + "</div></td>"));
     //COLUMNA COMENTARIO EMPLEADO
     row.append($("<td class='tdObservaciones'>" + rowInfo.emp_observaciones + "</td>"));
     //COLUMNA FECHA
@@ -1041,7 +1202,7 @@ async function validarIncidencia(btnValidar) {
                 var respuesta = JSON.parse(xmlhr.responseText);
                 // console.log(respuesta);
                 if (respuesta.estado === 'correcto') {
-                    console.log(respuesta);
+                    // console.log(respuesta);
                 } else {
                     // Hubo un error
                     swal({
@@ -1085,7 +1246,7 @@ async function validarIncidencia(btnValidar) {
                 var respuesta = JSON.parse(xmlhr.responseText);
                 // console.log(respuesta);
                 if (respuesta.estado === 'correcto') {
-                    console.log(respuesta);
+                    // console.log(respuesta);
                 } else {
                     // Hubo un error
                     swal({
@@ -1204,7 +1365,7 @@ function tablaRH(rowInfo) {
     //TIPO DE INCIDENCIA
     row.append($("<td class='tipo_incidencia'><b>" + rowInfo.tipo_incidencia + "</td>"));
     //COLUMNA MOTIVO
-    row.append($("<td class='d-none'>N/A</td>"));
+    row.append($("<td><div>" + rowData.motivo  + "</div></td>"));
     //COLUMNA COMENTARIO EMPLEADO
     row.append($("<td class='tdObservaciones'>" + rowInfo.emp_observaciones + "</td>"));
     //COLUMNA FECHA
@@ -1427,7 +1588,7 @@ if (empleado_aut !== null) {
             //console.log(respuesta);
             if (respuesta.estado === 'correcto') {
                 var informacion = respuesta.informacion;
-                console.log(informacion);
+                // console.log(informacion);
                 for (var i in informacion) {
                     tablaPersonal(informacion[i]);
                     $('#alertaM').hide();

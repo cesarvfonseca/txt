@@ -13,10 +13,10 @@
 					<input type="number" class="form-control" id="txtHorasc" placeholder="Ingresar Horas en contra" required>
 				</div>
 
-				<div class="col-md-4 mb-2">
+				<!-- <div class="col-md-4 mb-2">
 					<label for="txtMotivo">Motivo</label>
         			<select class="form-control txtMotivo" id="txtMotivoC"></select>
-				</div>
+				</div> -->
 			</div>
 
 
