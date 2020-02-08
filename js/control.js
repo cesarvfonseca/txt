@@ -1,5 +1,6 @@
 let searchParams = new URLSearchParams(window.location.search)
 let seccionActual = searchParams.get('request');
+let horasSolicitadas = $(".horasSolicitadas");
 
 eventListeners_();
 $('#txtDIV').hide();
@@ -43,6 +44,20 @@ $('.exportTableRH').click(function () {
         fileext: ".xls"
     });
 });
+
+horasSolicitadas.focusout(validarHoras);
+
+function validarHoras(){
+    var cantidad = horasSolicitadas.val(),
+        RE = /^\d*\.?\d*$/;
+    if (RE.test(cantidad)) {
+        $('.invalid-horasSolicitadas').addClass('d-none');
+    } else {
+        horasSolicitadas.val('');
+        $('.invalid-horasSolicitadas').removeClass('d-none');
+    }
+    
+}
 
 function eventListeners_() {
     if (document.querySelector('.nuevo-txt') !== null) {
@@ -494,7 +509,7 @@ function enviarPCG(e) {
             datosPCG.append('n_destinatario', nombre_destinatario);
             datosPCG.append('c_destinatario', correo_destinatario);
             datosPCG.append('accion', tipo);
-            console.log(tipo);
+            // console.log(tipo);
 
             // CREAR LA INSTANCIA AJAX PARA EL LLAMADO
             var xmlPCG = new XMLHttpRequest();
@@ -1110,10 +1125,8 @@ function tablaPersonal(rowInfo) {
     row.append($("<td> <b>" + rowInfo.nombre_largo + " </b> </td>"));
     //TIPO DE INCIDENCIA
     row.append($("<td class='tipo_incidencia'><b>" + rowInfo.tipo_incidencia + "</td>"));
-    //COLUMNA MOTIVO EMPLEADO
-    row.append($("<td class='d-none'>N/A</td>"));
     //COLUMNA MOTIVO
-    row.append($("<td><div>" + rowData.motivo  + "</div></td>"));
+    row.append($("<td><div>" + rowInfo.motivo  + "</div></td>"));
     //COLUMNA COMENTARIO EMPLEADO
     row.append($("<td class='tdObservaciones'>" + rowInfo.emp_observaciones + "</td>"));
     //COLUMNA FECHA
@@ -1365,7 +1378,7 @@ function tablaRH(rowInfo) {
     //TIPO DE INCIDENCIA
     row.append($("<td class='tipo_incidencia'><b>" + rowInfo.tipo_incidencia + "</td>"));
     //COLUMNA MOTIVO
-    row.append($("<td><div>" + rowData.motivo  + "</div></td>"));
+    row.append($("<td><div>" + rowInfo.motivo  + "</div></td>"));
     //COLUMNA COMENTARIO EMPLEADO
     row.append($("<td class='tdObservaciones'>" + rowInfo.emp_observaciones + "</td>"));
     //COLUMNA FECHA
@@ -1403,7 +1416,7 @@ function tablaRH(rowInfo) {
     });
 
     //ACTIVAR CAMPO DE BUSQUEDA
-    $("#txtBuscar").removeAttr('disabled');
+    $("#txtBuscarRH").removeAttr('disabled');
     $("#txtsearchvh").removeAttr('disabled');
 }
 
@@ -1524,9 +1537,12 @@ async function revisarIncidencia(btnRevisar) {
 }
 
 //BUSQUEDA POR TEXTO
-$('#txtBuscar').keyup(function () {
+var textoBuscadoRH = $('#txtBuscarRH');
+
+textoBuscadoRH.keypress(function (event) {
+
+    if (event.keyCode == 13) {
     var txtBuscado = this.value,
-        idempleado = $('#idemp').val(),
         accion = 'consulta_rh',
         fechaInicial = $('#txtFechaINI').val(),
         fechafinal = $('#txtFechaFIN').val();
@@ -1546,7 +1562,7 @@ $('#txtBuscar').keyup(function () {
             // console.log(respuesta);
             if (respuesta.estado === 'correcto') {
                 var informacion = respuesta.informacion;
-                ///console.log(informacion);
+                // console.log(informacion);
                 for (var i in informacion) {
                     tablaRH(informacion[i]);
                     $('#alertaR').hide();
@@ -1560,6 +1576,7 @@ $('#txtBuscar').keyup(function () {
         }
     }
     xmlhr.send(consulta_parametros);
+}
 });
 
 //PANEL DE AUTORIZACION DEL CORREO

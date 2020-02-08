@@ -27,7 +27,7 @@
     </div>
     <div class="col-md-4"></div>
     <div class="col-md-3">
-        <input type="text" name="txtBuscar" id="txtBuscar" placeholder="Buscar empleado" class="form-control" disabled />
+        <input type="text" name="txtBuscar" id="txtBuscarRH" placeholder="Buscar empleado" class="form-control" disabled />
     </div>
 </div>
 <hr>

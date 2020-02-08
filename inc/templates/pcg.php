@@ -10,7 +10,7 @@
 
 				<div class="col-md-4 mb-2">
 					<label>Horas</label>
-					<input type="number" class="form-control" id="txtHoraspcg" placeholder="Ingresar Horas en contra" required>
+					<input type="number" class="form-control" id="txtHoraspcg" placeholder="Ingresar Horas" required>
 				</div>
 
 				<div class="col-md-4 mb-2">

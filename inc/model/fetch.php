@@ -288,6 +288,7 @@
 					AND p1.fecha >= ? AND p1.fecha <= ?
 					AND p1.rh_vobo = 1
 					AND te.status <> 'B'
+					AND vac_anio = 0 
 					GROUP BY CONCAT(te.numero_nomina,CONVERT(VARCHAR(10), p1.crtd_datetime, 112),replace(convert(varchar(4), p1.crtd_datetime,108),':','')),te.numero_nomina,te.nombre_largo,tc.nombre,p1.rh_vobo
 					ORDER BY te.numero_nomina
 					";
