@@ -49,8 +49,8 @@
 
 	</header>
 
-	<div style="margin: 50px 0; background-color: white;"></div>
-	 <div class="container-fluid m-4">
+	<div style="margin: 50px 0; background-color: antiquewhite;"></div>
+	 <div class="container-fluid mx-4">
 	 	<div class="row">
 	 		<div class="col-md-12">
 				<?php
@@ -66,6 +66,8 @@
 							include('inc/templates/nominas.php');
 						} elseif ($request=='autorizar') {
 							include('inc/templates/autorizar.php');
+						} elseif ($request=='rh_resumen') {
+						include('inc/templates/resumen_personal.php');
 						}
 					}
 

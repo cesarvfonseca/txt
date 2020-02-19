@@ -394,8 +394,6 @@ if ($accion == 'vacaciones')
     // die(json_encode($_POST));
     $feriados = array(
     '1-1', // Año Nuevo (irrenunciable)
-    '5-2', //Dia de la bandera
-    '21-3', //Natalicio benito Juarez
     '1-5', // Día Nacional del Trabajo (irrenunciable)
     '25-12' // Natividad del Señor (feriado religioso) (irrenunciable)
     );

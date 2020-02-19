@@ -288,6 +288,7 @@
 					AND p1.fecha >= ? AND p1.fecha <= ?
 					AND p1.rh_vobo = 1
 					AND te.status <> 'B'
+					AND vac_anio = 0 
 					GROUP BY CONCAT(te.numero_nomina,CONVERT(VARCHAR(10), p1.crtd_datetime, 112),replace(convert(varchar(4), p1.crtd_datetime,108),':','')),te.numero_nomina,te.nombre_largo,tc.nombre,p1.rh_vobo
 					ORDER BY te.numero_nomina
 					";
@@ -324,5 +325,46 @@
 		sqlsrv_free_stmt( $stmt);
 		sqlsrv_close( $con ); 
 	}
+
+	if($accion == 'datosResumen')
+	{
+		// die(json_encode($_POST));
+		include '../function/connection.php';
+
+		$query = "EXEC spResumenTXTVAC";
+
+		$params = array( $codigo );
+		$stmt = sqlsrv_query( $con, $query, $params);
+                
+		$result = array();
+		
+		if( $stmt === false) {
+			die( print_r( sqlsrv_errors(), true) );
+			$respuesta = array(
+				'estado' => 'NOK',
+				'tipo' => 'error',
+				'informacion' => 'No existe informacion',
+				'mensaje' => 'No hay datos en la BD'                
+			);
+		} else {
+			do {
+				while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)){
+				$result[] = $row; 
+				}
+			} while (sqlsrv_next_result($stmt));
+			$respuesta = array(
+				'estado' => 'OK',
+				'tipo' => 'success',
+				'informacion' => $result,
+				'mensaje' => 'Informacion obtenida'                
+			);
+		}               
+
+		echo json_encode($respuesta);
+		sqlsrv_free_stmt( $stmt);
+		sqlsrv_close( $con ); 
+	}
+
+
 
  ?>

@@ -10,7 +10,10 @@
 
 				<div class="col-md-4 mb-2">
 					<label>Horas</label>
-					<input type="number" class="form-control" id="txtHoraspsg" placeholder="Ingresar Horas en contra" required>
+					<input type="text" class="form-control horasSolicitadas" id="txtHoraspsg" placeholder="Ingresar Horas" required>
+					<div class="invalid-horasSolicitadas d-none text-danger">
+						Ingrese cantidad de horas valida!
+					</div>
 				</div>
 
 			</div>
@@ -38,4 +41,5 @@
 			<input type="hidden" id="employeeIDpsg" value="<?php echo $_SESSION["user1"];?>">
 		</form>
 	</div>
+
 </div>

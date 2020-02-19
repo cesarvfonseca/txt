@@ -14,6 +14,9 @@
 				<li class="nav-item active">
 					<a class="nav-link" href="index.php?request=rrhh">Panel RRHH<span class="sr-only">(current)</span></a>
 				</li>
+				<li class="nav-item active">
+					<a class="nav-link" href="index.php?request=rh_resumen">Resumen de Personal<span class="sr-only">(current)</span></a>
+				</li>
 			<?php endif ?>
 			<!-- P1002 -->
 			<?php if ($employee_id == 'P1002'): ?>
