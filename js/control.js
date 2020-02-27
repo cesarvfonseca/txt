@@ -164,6 +164,89 @@ switch (seccionActual) {
             });
         });
         break;
+    case 'personal-nominas':
+        var fechaINI = $('#txtFechaINInb'),
+            fechaFIN = $('#txtFechaFINnb'),
+            btnBuscar = $('#btnBuscarnb'),
+            textBuscar = $('#txtBuscarEmpleadonb');
+        
+        function datosTablaIncidencias(fi,ff){
+            $.ajax({
+                type: 'POST',
+                url: 'inc/model/fetch.php',
+                data: { accion: 'datosIncidencias', ff:ff, fi:fi },
+                success: function (response) {
+                    var respuesta = JSON.parse(response);
+                    // console.log(respuesta);
+                    var informacion = respuesta.informacion;
+                    for (var i in informacion) {
+                        tablaIncidenciasNom(informacion[i]);
+                    }
+                }
+            });
+        }
+
+        function tablaIncidenciasNom(rowInfo) {
+            
+            var txtf = '',txtc = '',pcg = '',psg = '';
+
+            txtf = (rowInfo.TXTF === null) ? 'NA' : rowInfo.TXTF;
+            txtc = (rowInfo.TXTC === null) ? 'NA' : rowInfo.TXTC;
+            pcg = (rowInfo.PCG === null) ? 'NA' : rowInfo.PCG;
+            psg = (rowInfo.PSG === null) ? 'NA' : rowInfo.PSG;
+
+            let row = $("<tr />")
+
+            $("#tablaIncidencias").append(row); //this will append tr element to table... keep its reference for a while since we will add cels into it
+            // NUMERO DE NOMINA DEL EMPLEADO
+            row.append($("<td> " + rowInfo.numero_nomina + " </td>"));
+            // NOMBRE DEL EMPLEADO
+            row.append($("<td> " + rowInfo.nombre_largo + " </td>"));
+
+            // NOMBRE DEL DEPARTAMENTO
+            row.append($("<td> " + rowInfo.Departamento + " </td>"));
+            // row.append($("<td> " + rowInfo.fechaINI.date.substring(0, 10) + ' Al ' + rowInfo.fechaFIN.date.substring(0, 10)  + " </td>"));
+            row.append($("<td> " + rowInfo.fechaLaboral.date.substring(0, 10) + " </td>"));
+            row.append($("<td> " + rowInfo.horaentrada.date.substr(11,8) + " </td>"));
+            row.append($("<td> " + rowInfo.validacionEntrada + " </td>"));
+            row.append($("<td> " + rowInfo.horasalida.date.substr(11,8) + " </td>"));
+            row.append($("<td> " + rowInfo.validacionSalida + " </td>"));
+            row.append($("<td> " + rowInfo.JL + " </td>"));
+            row.append($("<td> " + txtf + " </td>"));
+            row.append($("<td> " + txtc + " </td>"));
+            row.append($("<td> " + pcg + " </td>"));
+            row.append($("<td> " + psg + " </td>"));
+            row.append($("<td> " + rowInfo.nombreTurno + " </td>"));
+            row.append($("<td> " + rowInfo.horarioEntrada + " </td>"));
+            row.append($("<td> " + rowInfo.horarioSalida + " </td>"));
+            row.append($("<td> " + rowInfo.joranda_laboral + " </td>"));
+        }
+
+        btnBuscar.on('click',function(e){
+            e.preventDefault();
+            $('#tablaIncidencias').empty();
+            textBuscar.removeAttr("disabled");
+            datosTablaIncidencias(fechaINI.val(),fechaFIN.val());
+        });
+
+        textBuscar.on("keyup", function () {
+            var value = $(this).val().toLowerCase();
+            $("#tablaIncidencias tr").filter(function () {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            });
+        });
+
+        $('#exportarReportenb').click(function () {
+            $("#tableIncidenciasNominas").table2excel({
+                containerid: ".table",
+                datatype: 'table',
+                name: "report",
+                filename: "Reporte Incidencias Nominas", // Here, you can assign exported file name
+                fileext: ".xls"
+            });
+        });
+    
+    break;
     case 'rh_resumen':
         datosTablaResumen();
         function datosTablaResumen(){
@@ -205,6 +288,281 @@ switch (seccionActual) {
         });
         
     break;
+    case 'turnos':
+        var btnNuevoturno = $('#btnNuevoturno'),
+            btncancelarTN = $('.btncancelarTN'),
+            btnGuardarTurno = $('#btnGuardarTurno'),
+            btnEditarTurno = $('#btnEditarTurno'),
+            btnActualizarTurno = $('#btnActualizarTurno'),
+            btnEliminarTurno = $('#btnEliminarTurno'),
+            tablaTurnos = $('#tablaTurnos'),
+            nombreTurno = $('#txtNombreTurno'),
+            descripcionTurno = $('#txtDescripcionTurno'),
+            tipoTurno = $('#txtClasificacion'),
+            horaEntrada = $("#horaEntrada"),
+            horaSalida = $("#horaSalida"),
+            horarioEntrada = $("#horarioEntrada"),
+            horarioSalida = $("#horarioSalida"),
+            entradaTemprana = $("#entradaTemprana"),
+            entradaTolerancia = $("#entradaTolerancia"),
+            salidaTemprana = $("#salidaTemprana"),
+            salidaTolerancia = $("#salidaTolerancia"),
+            nuevoTurno = $('.nuevoTurno'),
+            detalleTurno = $('.detalleTurno'),
+            eturno = $('.eturno'),
+            __hours;
+
+
+        $("#buscarEmpleadoTurno").on("keyup", function () {
+            var value = $(this).val().toLowerCase();
+            $("#tableTurnosEmpleado tr").filter(function () {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            });
+        });
+
+        datosTurnos();
+
+        eturno.attr('disabled', 'disabled');
+
+        function datosTurnos(){
+            $.ajax({
+                type: 'POST',
+                url: 'inc/model/fetch.php',
+                data: { accion: 'datosTurnos' },
+                success: function (response) {
+                    var respuesta = JSON.parse(response);
+                    var informacion = respuesta.informacion;
+                    // console.log(informacion);
+                    for (var i in informacion) {
+                        llenartablaTurnos(informacion[i]);
+                    }
+                }
+            });
+        }
+
+        function llenartablaTurnos(rowInfo) {
+
+            let row = $("<tr />")
+            $("#tableTurnos").append(row); //this will append tr element to table... keep its reference for a while since we will add cels into it
+            // NUMERO DE NOMINA DEL EMPLEADO
+            row.append($("<td class='turnoID text-center'><button type='button' class='btn btn-link btnConsultaTurno' data-id='" + rowInfo.id_turno
+                            + "' data-descripcion='" + rowInfo.descripcion + "' data-comentario='" + rowInfo.comentario + "'  data-he='" + rowInfo.hora_entrada.date.substr(11,5)
+                            + "' data-hs='" + rowInfo.hora_salida.date.substr(11,5) + "' data-hea='" + rowInfo.entrada_temprana + "' data-heb='" + rowInfo.entrada_tolerancia 
+                            + "' data-hsa='" + rowInfo.salida_temprana + "' data-hsb='" + rowInfo.salida_tardia + "' data-tp='" + rowInfo.clave_turno + "'"
+                            + " title='Ver información'>" + rowInfo.id_turno + "</button></td>"));
+            // NOMBRE DEL EMPLEADO
+            row.append($("<td> " + rowInfo.descripcion + " </td>"));
+            // NOMBRE DEL DEPARTAMENTO
+            row.append($("<td> " + rowInfo.comentario + " </td>"));
+            row.append($("<td> " + rowInfo.hora_entrada.date.substr(11,5) + " </td>"));
+            row.append($("<td> " + rowInfo.hora_salida.date.substr(11,5) + " </td>"));
+            row.append($("<td> " + rowInfo.joranda_laboral + " </td>"));
+            row.append($("<td> " + rowInfo.created_at.date.substr(0,10) + " </td>"));
+
+            $(".btnConsultaTurno").unbind().click(function () {
+                llenarTipoTurno();
+                $("html, body").animate({ scrollTop: 0 }, 500);
+                var idTurno = $((this)).data('id'),
+                    nombreTurno = $((this)).data('descripcion'),
+                    descripcionTurno = $((this)).data('comentario'),
+                    horaentrada = $((this)).data('he'),
+                    horaentradaa = $((this)).data('hea'),
+                    horaentradab = $((this)).data('heb'),
+                    horasalida = $((this)).data('hs'),
+                    horasalidaa = $((this)).data('hsa'),
+                    horasalidab = $((this)).data('hsb'),
+                    tipoTurno = $((this)).data('tp');
+                
+                setTimeout(function () {
+                    $('#editClasificacion').val(tipoTurno);
+                }, 200);
+
+                $('#editNombreTurno').val(nombreTurno);
+                $('#editDescripcionTurno').val(descripcionTurno);
+                $('#edithoraEntrada').val(horaentrada);
+                $('#editentradaTemprana').val(horaentradaa);
+                $('#editentradaTolerancia').val(horaentradab);
+                $('#edithoraSalida').val(horasalida);
+                $('#editsalidaTemprana').val(horasalidaa);
+                $('#edtsalidaTolerancia').val(horasalidab);
+
+                tablaTurnos.addClass('d-none');
+                btnNuevoturno.addClass('d-none');
+                detalleTurno.removeClass('d-none');
+
+                tablaTurnoUsuario(idTurno, tipoTurno);
+            });
+        }
+
+        let tablaTurnoUsuario = (idTurno, tipoTurno) => {
+            $('#tableTurnoEmpleado').empty();
+            $.ajax({
+                type: 'POST',
+                url: 'inc/model/fetch.php',
+                data: { accion: 'turnoUsuarios',idTurno : idTurno, parametro : tipoTurno },
+                success: function (response) {
+                    let respuesta = JSON.parse(response);
+                    var informacion = respuesta.informacion;
+                    // console.log(informacion);
+                    for (var i in informacion) {
+                        tableTurnoUsuario(informacion[i]);
+                    }
+                }
+            });
+        }
+
+        function tableTurnoUsuario(rowInfo) {
+
+            let row = $("<tr />")
+            $("#tableTurnoEmpleado").append(row); //this will append tr element to table... keep its reference for a while since we will add cels into it
+            // NUMERO DE NOMINA DEL EMPLEADO
+            row.append($("<td> " + rowInfo.numero_nomina + " </td>"));
+            // NOMBRE DEL EMPLEADO
+            row.append($("<td> " + rowInfo.nombre_largo + " </td>"));
+            // NOMBRE DEL DEPARTAMENTO
+            row.append($("<td> " + rowInfo.Departamento + " </td>"));
+            row.append($("<td> " + rowInfo.fecha_creada + " </td>"));
+            row.append($("<td class='text-center'><a class='btn bg-danger btnEliminarTurno text-white btn-md' data-id='" + rowInfo.id + "' role='button' title='Eliminar Registro'><i class='fas fa-user-slash'></i></a> </td>"));
+
+            $(".btnEliminarTurno").unbind().click(function () {
+                eliminarTurnoEmpleado($(this));
+            });
+        }
+
+        function eliminarTurnoEmpleado(btnEliminarTurnoEmpleado) {
+            var idTurnoEmpleado = btnEliminarTurnoEmpleado.data('id'),
+                    tipoTurno = $('#editClasificacion').val();
+
+                // console.log(idTurnoEmpleado + ' ' + tipoTurno);
+                $.ajax({
+                    type: 'POST',
+                    url: 'inc/model/control.php',
+                    data: { accion: 'eliminarTurnoUsuario',idTurno : idTurnoEmpleado, parametro : tipoTurno },
+                    success: function (response) {
+                        let respuesta = JSON.parse(response);
+                        console.log(respuesta);
+
+                        if(respuesta.estado === 'correcto'){
+                            btnEliminarTurnoEmpleado.parents("tr").remove();
+                        }
+                    }
+                });
+        }
+
+
+        let llenarTipoTurno = () => {
+            var opciones = ['LV','FDS','HC','HD'];
+            let campo = '';
+            for (var i in opciones) {
+                campo += '<option value="' + opciones[i] + '">' + opciones[i] + '</option>';
+            }
+            $('#txtClasificacion').html(campo);
+            $('#editClasificacion').html(campo);
+            /*let action = 'obtenerDepartamento';
+            $.ajax({
+                type: 'POST',
+                url: backendURL,
+                data: { action: action },
+                success: function (response) {
+                    let respuesta = JSON.parse(response);
+                    let departamento = respuesta.informacion,
+                        campo = '';
+                    for (var i in departamento) {
+                        campo += '<option value="' + departamento[i].id_celula + '">' + departamento[i].nombre + '</option>';
+                    }
+                    txtCelulaL.html(campo);
+                }
+            });*/
+        }
+
+        btnNuevoturno.on('click', function () {
+            tablaTurnos.addClass('d-none');
+            btnNuevoturno.addClass('d-none');
+            llenarTipoTurno();
+            nuevoTurno.removeClass('d-none');
+        });
+
+        btncancelarTN.on('click', function () {
+            tablaTurnos.removeClass('d-none');
+            btnNuevoturno.removeClass('d-none');
+            nuevoTurno.addClass('d-none');
+            detalleTurno.addClass('d-none');
+            eturno.attr('disabled', 'disabled');
+        });
+
+        btnEditarTurno.on('click',function(){
+            eturno.removeAttr("disabled");
+            btnEditarTurno.addClass('d-none');
+            btnActualizarTurno.removeClass('d-none');
+            btnEliminarTurno.removeClass('d-none');
+        });
+
+        entradaTolerancia.focusout(function () {
+            var he = 'De ' + moment.utc(horaEntrada.val(),'hh:mm').subtract(entradaTemprana.val(),'minutes').format('LT') + ' a ' + moment.utc(horaEntrada.val(),'hh:mm').add(entradaTolerancia.val(),'minutes').format('LT');
+            horarioEntrada.text(he);
+        });
+
+        salidaTolerancia.focusout(function () {
+            var hs = 'De ' + moment.utc(horaSalida.val(),'hh:mm').subtract(salidaTemprana.val(),'minutes').format('LT') + ' a ' + moment.utc(horaSalida.val(),'hh:mm').add(salidaTolerancia.val(),'minutes').format('LT');
+            var __startTime = moment("1992-11-23T" + horaEntrada.val()).format();
+            var __endTime = moment("1992-11-23T" + horaSalida.val()).format();
+
+            var __duration = moment.duration(moment(__endTime).diff(__startTime));
+            __hours = __duration.asHours()*60;
+
+            horarioSalida.text(hs + ' / Joranda Laboral: ' +  __hours + ' minutos.');
+        });
+            
+    
+        $('#btnGuardarTurno').on('click', function(){
+            var employeeID = $('#employeeID').val();
+            
+            //console.log(horaEntrada.val() + ' ' + horaSalida.val() + ' ' + entradaTemprana.val() + ' ' + entradaTolerancia.val() + ' ' + salidaTemprana.val() + ' ' + salidaTolerancia.val() + ' ' + employeeID);
+            if (horaEntrada.val() === '' || horaSalida.val() === '' || entradaTemprana.val() === '' || entradaTolerancia.val() === '' || salidaTemprana.val() === '' || salidaTolerancia.val() === '' || descripcionTurno.val() == '' || nombreTurno.val() === ''){
+                swal({
+                    title: 'Campos Vacios',
+                    text: 'Favor de llenar todos los campos.',
+                    type: 'warning'
+                });
+            } else {
+                $.ajax({
+                    type: 'POST',
+                    url: 'inc/model/control.php',
+                    data: { accion: 'guardarTurno',nombreTurno : nombreTurno.val(), descripcionTurno : descripcionTurno.val(),tipoTurno : tipoTurno.val(), horaEntrada : horaEntrada.val(), horaSalida : horaSalida.val(), 
+                            entradaTemprana : entradaTemprana.val(), entradaTolerancia : entradaTolerancia.val(), salidaTemprana : salidaTemprana.val(), salidaTolerancia : salidaTolerancia.val(), 
+                            jl : __hours, empControl : employeeID},
+                    success: function (response) {
+                        var respuesta = JSON.parse(response);
+                        // console.log(respuesta);
+                        if(respuesta.estado === 'correcto'){
+                            swal({
+                                title: 'Guardado exitoso!',
+                                text: 'Guardado de la información exitoso!',
+                                type: 'success'
+                            })
+                            .then(resultado => {
+                                if (resultado.value) {
+                                    window.location.href = 'index.php?request=turnos';
+                                }
+                            })
+                        } else if (respuesta.estado === 'incorrecto') {
+                            swal({
+                                title: 'Error en proceso!',
+                                text: respuesta.mensaje,
+                                type: 'warning'
+                            })
+                            .then(resultado => {
+                                if (resultado.value) {
+                                    window.location.href = 'index.php?request=turnos';
+                                }
+                            })
+                        }
+                    }
+                });
+            }
+        });
+
+        break;
     default:
         break;
 }
@@ -1145,13 +1503,22 @@ $('#btnRangoJefe').unbind().click(function (e) {
 
 function tablaPersonal(rowInfo) {
     let horaE = '',
+        fecha_solicitud = moment(rowInfo.fecha.date.substring(0, 10)).format("YYYY-MM-D"),
+        fecha_actual = moment().format("YYYY-MM-D"),
+        btnAtributo = ''
         horaS = '';
+
     if (rowInfo.horaEntrada === null || rowInfo.horaSalida === null) {
         horaE = 'N/A';
         horaS = 'N/A';
     } else {
         horaE = rowInfo.horaEntrada.date.substr(10, 6),
             horaS = rowInfo.horaSalida.date.substr(10, 6);
+    }
+
+    //VALIDACION NO AUTORIZAR HORAS EL MIMSO DIA DE LA SOLICITUD
+    if(fecha_solicitud >= fecha_actual && rowInfo.tipo !== 3 ){
+        btnAtributo = 'd-none';
     }
 
     var row = $("<tr />"),
@@ -1200,15 +1567,10 @@ function tablaPersonal(rowInfo) {
     //COLUMNA COMENTARIO JEFE
     row.append($("<td class='tdObservaciones'>" + rowInfo.jefe_observaciones + "</td>"));
     //COLUMNA AUTORIZACION DEL JEFE
-    row.append($("<td class='autorizado'>" + "<a tabindex='1' class='btn btn-sm " + btnClass + " btnRevisar' " +
+    row.append($("<td class='autorizado text-center'>" + "<a tabindex='1' class='btn btn-sm " + btnClass + ' ' + btnAtributo + " btnRevisar' " +
         "data-idemp='" + rowInfo.employee + "' data-mov='" + rowInfo.id + "' data-razon='" + rowInfo.emp_observaciones +
         "' data-empleado='" + rowInfo.nombre_largo + "' role='button'> " + txtBoton + " </a>" + "</td>"));
 
-
-    // Activar POPOVER
-    $(function () {
-        $('[data-toggle="popover"]').popover()
-    })
     //BOTON AUTORIZAR JEFES
     $(".btnRevisar").click(function () {
         validarIncidencia($(this));

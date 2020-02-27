@@ -365,6 +365,150 @@
 		sqlsrv_close( $con ); 
 	}
 
+	if($accion == 'datosTurnos')
+	{
+		// die(json_encode($_POST));
+		include '../function/connection.php';
+
+		$query = "SELECT * FROM P1Turnos";
+
+		$params = array( $codigo );
+		$stmt = sqlsrv_query( $con, $query, $params);
+                
+		$result = array();
+		
+		if( $stmt === false) {
+			die( print_r( sqlsrv_errors(), true) );
+			$respuesta = array(
+				'estado' => 'NOK',
+				'tipo' => 'error',
+				'informacion' => 'No existe informacion',
+				'mensaje' => 'No hay datos en la BD'                
+			);
+		} else {
+			do {
+				while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)){
+				$result[] = $row; 
+				}
+			} while (sqlsrv_next_result($stmt));
+			$respuesta = array(
+				'estado' => 'OK',
+				'tipo' => 'success',
+				'informacion' => $result,
+				'mensaje' => 'Informacion obtenida'                
+			);
+		}               
+
+		echo json_encode($respuesta);
+		sqlsrv_free_stmt( $stmt);
+		sqlsrv_close( $con ); 
+	}
+
+	if($accion == 'turnoUsuarios')
+	{
+		// die(json_encode($_POST));
+		include '../function/connection.php';
+		$idTurno = $_POST['idTurno'];
+		$parametro = $_POST['parametro'];
+
+		switch ($parametro){
+			case 'LV': 
+				$query = "SELECT tu.id,te.numero_nomina,te.nombre_largo,tc.nombre AS Departamento,FORMAT (tu.created_at, 'yyyy-MM-dd') as fecha_creada  FROM P1TurnoUsuario AS tu
+							INNER JOIN tbempleados AS te
+							ON te.numero_nomina = tu.numero_nomina
+							INNER JOIN tbcelula AS tc
+							ON tc.id_celula = te.id_celula
+							AND id_turno1 = ?
+							ORDER BY tu.created_at ASC";
+				$params = array( $idTurno );
+			break;
+			case 'FDS':
+				$query = "SELECT tu.id,te.numero_nomina,te.nombre_largo,tc.nombre AS Departamento,FORMAT (tu.created_at, 'yyyy-MM-dd') as fecha_creada  FROM P1TurnoUsuario AS tu
+							INNER JOIN tbempleados AS te
+							ON te.numero_nomina = tu.numero_nomina
+							INNER JOIN tbcelula AS tc
+							ON tc.id_celula = te.id_celula
+							AND id_turno2 = ?
+							ORDER BY tu.created_at ASC";
+				$params = array( $idTurno );
+			break;
+			default:
+			break;
+		}
+		$stmt = sqlsrv_query( $con, $query, $params);
+                
+		$result = array();
+		
+		if( $stmt === false) {
+			die( print_r( sqlsrv_errors(), true) );
+			$respuesta = array(
+				'estado' => 'NOK',
+				'tipo' => 'error',
+				'informacion' => 'No existe informacion',
+				'mensaje' => 'No hay datos en la BD'                
+			);
+		} else {
+			do {
+				while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)){
+				$result[] = $row; 
+				}
+			} while (sqlsrv_next_result($stmt));
+			$respuesta = array(
+				'estado' => 'OK',
+				'tipo' => 'success',
+				'informacion' => $result,
+				'mensaje' => 'Informacion obtenida'                
+			);
+		}               
+
+		echo json_encode($respuesta);
+		sqlsrv_free_stmt( $stmt);
+		sqlsrv_close( $con ); 
+	}
+
+	if ( $accion == 'datosIncidencias' ) 
+	{
+		// die(json_encode($_POST));
+		$fechaINI = $_POST['fi'];
+		$fechaFIN = $_POST['ff'];
+		// $valorBuscado = $_POST['valorBuscado'];
+		include '../function/connection.php';
+		
+		$query = "SELECT * FROM P1empleadoHorario(?,?) ORDER BY fechaLaboral,horaentrada ASC";
+		$params = array($fechaINI, $fechaFIN);
+		//$options =  array( "Scrollable" => SQLSRV_CURSOR_KEYSET );
+		$stmt = sqlsrv_query( $con, $query, $params);
+
+		$result = array();
+	
+		if( $stmt === false) {
+			die( print_r( sqlsrv_errors(), true) );
+			$respuesta = array(
+				'estado' => 'error',
+				'tipo' => 'error',
+				'informacion' => 'No existe informacion',
+				'mensaje' => 'No hay datos en la BD'                
+			);
+		} else {
+			do {
+				while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)){
+				$result[] = $row; 
+				}
+			} while (sqlsrv_next_result($stmt));
+			$respuesta = array(
+				'estado' => 'correcto',
+				'tipo' => 'success',
+				'informacion' => $result,
+				'mensaje' => 'Informacion obtenida de buscar'                
+			);
+		}
+	
+	
+		echo json_encode($respuesta);
+		sqlsrv_free_stmt( $stmt);
+		sqlsrv_close( $con ); 
+	}
+
 
 
  ?>

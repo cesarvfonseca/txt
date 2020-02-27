@@ -31,6 +31,7 @@
 	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous">
 	<script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
 	<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 	<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
 	<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
 	
@@ -64,10 +65,18 @@
 							include('inc/templates/rrhh.php');
 						} else if ($request=='nominas') {
 							include('inc/templates/nominas.php');
+						} else if ($request=='personal-nominas') {
+								include('inc/templates/Nominas/personal.php');
 						} elseif ($request=='autorizar') {
 							include('inc/templates/autorizar.php');
 						} elseif ($request=='rh_resumen') {
-						include('inc/templates/resumen_personal.php');
+							include('inc/templates/resumen_personal.php');
+						} elseif ($request=='turnos') {
+							include('inc/templates/RH/turnos.php');
+						} elseif ($request=='administrar-turno') {
+							include('inc/templates/RH/administrar-turno.php');
+						} elseif ($request=='asignar-turnos') {
+							include('inc/templates/RH/asignar_turnos.php');
 						}
 					}
 

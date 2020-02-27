@@ -460,6 +460,81 @@ if ($accion == 'vacaciones')
 echo json_encode($respuesta);
 }
 
+if ($accion == 'guardarTurno')
+{
+    // die(json_encode($_POST));
+    include '../function/connection.php';
+    $nombreTurno = $_POST['nombreTurno'];
+    $descripcionTurno = $_POST['descripcionTurno'];
+    $tipoTurno = $_POST['tipoTurno'];
+    $horaEntrada = $_POST['horaEntrada'];
+    $horaSalida = $_POST['horaSalida'];
+    $entradaTemprana = $_POST['entradaTemprana'];
+    $entradaTolerancia = $_POST['entradaTolerancia'];
+    $salidaTemprana = $_POST['salidaTemprana'];
+    $salidaTolerancia = $_POST['salidaTolerancia'];
+    $jl = $_POST['jl'];
+    $empControl = $_POST['empControl'];
+    $fechaActual = date("Y-m-d H:m:s");
+
+    try{
+        $insertTurno = "INSERT INTO P1Turnos(clave_turno,descripcion,comentario,hora_entrada,hora_salida,entrada_temprana,entrada_tolerancia,salida_temprana,salida_tardia,joranda_laboral,created_at,created_by)
+                            VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
+
+        $params = array($tipoTurno,$nombreTurno,$descripcionTurno,$horaEntrada,$horaSalida,$entradaTemprana,$entradaTolerancia,$salidaTemprana,$salidaTolerancia,$jl,$fechaActual,$empControl);
+
+        $stmt = sqlsrv_query( $con, $insertTurno, $params );
+        if( $stmt ) {
+            $respuesta = array(
+                'estado' => 'correcto'
+                );
+        }else{
+            die( print_r( sqlsrv_errors(), true));
+        }
+    }catch(PDOException $e) {
+        // En caso de un error, tomar la exepcion
+        $respuesta = array(
+            'estado' => 'incorrecto',
+            'log' => $e->getMessage()
+            );
+    }
+    sqlsrv_free_stmt( $stmt);
+    sqlsrv_close( $con );
+    echo json_encode($respuesta);
+}
+
+if ($accion == 'eliminarTurnoUsuario')
+{
+    // die(json_encode($_POST));
+    include '../function/connection.php';
+    $idTurno = $_POST['idTurno'];
+    $parametro = $_POST['parametro'];
+    switch ($parametro){
+        case 'LV': 
+            $query = "UPDATE P1TurnoUsuario SET id_turno1 = 0 WHERE id = ?";
+        break;
+        case 'FDS':
+            $query = "UPDATE P1TurnoUsuario SET id_turno2 = 0 WHERE id = ?";
+        break;
+        default:
+        break;
+    }
+    $params = array($idTurno);
+    $stmt = sqlsrv_query( $con, $query, $params );
+    if( $stmt ) {
+        $respuesta = array(
+            'estado' => 'correcto'
+            );
+    }else{
+        $respuesta = array(
+            'estado' => 'incorrecto'
+            );
+    }
+    sqlsrv_free_stmt( $stmt);
+    sqlsrv_close( $con );
+    echo json_encode($respuesta);       
+}
+
 function DiasHabiles($fecha_inicial,$fecha_final)
 {
     $newArray = array();

@@ -1,6 +1,6 @@
 <h1>Tiempo por tiempo en contra</h1>
 <div class="row">
-	<div class="col-md-12">	
+	<div class="col-md-12">
 		<form method="POST" class="form" role="form" id="txtcForm">
 			<div class="form-row">
 				<div class="col-md-4 mb-2">
@@ -10,7 +10,7 @@
 
 				<div class="col-md-4 mb-2">
 					<label>Horas</label>
-					<input type="number" class="form-control" id="txtHorasc" placeholder="Ingresar Horas en contra" required>
+					<input type="number" class="form-control" id="txtHorasc" placeholder="Ingresar Horas en contra" step=".5" required>
 				</div>
 
 				<!-- <div class="col-md-4 mb-2">
@@ -26,7 +26,7 @@
 					<textarea class="form-control" id="txtRazonc" rows="3"></textarea>
 				</div>
 			</div>
-			<div class="form-row" id="agregar-txt" action="#">	
+			<div class="form-row" id="agregar-txt" action="#">
 				<div class="col-md-6 mb-3">
 					<label>Jefe directo</label>
 					<input type="text" class="form-control" id="txtNamec" value="<?php echo	$managerName;?>" disabled>
@@ -36,7 +36,7 @@
 					<input type="text" class="form-control" id="txtMailc" value="<?php echo	$managerMail;?>" disabled>
 				</div>
 			</div>
-			<br>	
+			<br>
 			<input type="submit" class="btn btn-success nuevo-txtc" id="" value="Enviar TXTC">
 			<input type="hidden" id="typec" value="txtc">
 			<input type="hidden" id="employeeIDc" value="<?php echo $_SESSION["user1"];?>">

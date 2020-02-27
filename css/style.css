@@ -1,3 +1,5 @@
+body {background-color: whitesmoke !important;}
+
 #txtDIV { 
   display: none;
 }
@@ -29,7 +31,6 @@
 #alertaR { 
   display: none;
 }
-
 
 table {
   width: 100%;
