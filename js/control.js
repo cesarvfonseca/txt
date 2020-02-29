@@ -312,14 +312,6 @@ switch (seccionActual) {
             eturno = $('.eturno'),
             __hours;
 
-
-        $("#buscarEmpleadoTurno").on("keyup", function () {
-            var value = $(this).val().toLowerCase();
-            $("#tableTurnosEmpleado tr").filter(function () {
-                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
-            });
-        });
-
         datosTurnos();
 
         eturno.attr('disabled', 'disabled');
@@ -372,9 +364,9 @@ switch (seccionActual) {
                     horasalidaa = $((this)).data('hsa'),
                     horasalidab = $((this)).data('hsb'),
                     tipoTurno = $((this)).data('tp');
-                
+
                 setTimeout(function () {
-                    $('#editClasificacion').val(tipoTurno);
+                    $('#editClasificacion').val(tipoTurno).attr('selected', true);
                 }, 200);
 
                 $('#editNombreTurno').val(nombreTurno);
@@ -425,7 +417,20 @@ switch (seccionActual) {
             row.append($("<td class='text-center'><a class='btn bg-danger btnEliminarTurno text-white btn-md' data-id='" + rowInfo.id + "' role='button' title='Eliminar Registro'><i class='fas fa-user-slash'></i></a> </td>"));
 
             $(".btnEliminarTurno").unbind().click(function () {
-                eliminarTurnoEmpleado($(this));
+                Swal.fire({
+                    title: 'Eliminar turno del usuario',
+                    text: "Seguro que deseas eliminar el turno del usuario?",
+                    type: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Si, eliminar!'
+                  }).then((result) => {
+                    if (result.value) {
+                        eliminarTurnoEmpleado($(this));
+                    }
+                  })
+                
             });
         }
 
@@ -441,8 +446,12 @@ switch (seccionActual) {
                     success: function (response) {
                         let respuesta = JSON.parse(response);
                         console.log(respuesta);
-
                         if(respuesta.estado === 'correcto'){
+                            Swal.fire(
+                                'Eliminado!',
+                                'Turno eliminado del usuario.',
+                                'success'
+                                )
                             btnEliminarTurnoEmpleado.parents("tr").remove();
                         }
                     }
@@ -451,28 +460,22 @@ switch (seccionActual) {
 
 
         let llenarTipoTurno = () => {
-            var opciones = ['LV','FDS','HC','HD'];
-            let campo = '';
-            for (var i in opciones) {
-                campo += '<option value="' + opciones[i] + '">' + opciones[i] + '</option>';
-            }
-            $('#txtClasificacion').html(campo);
-            $('#editClasificacion').html(campo);
-            /*let action = 'obtenerDepartamento';
             $.ajax({
                 type: 'POST',
-                url: backendURL,
-                data: { action: action },
+                url: 'inc/model/fetch.php',
+                data: { accion: 'obtenerTurnos' },
                 success: function (response) {
                     let respuesta = JSON.parse(response);
-                    let departamento = respuesta.informacion,
+                    // console.log(respuesta);
+                    let turno = respuesta.informacion,
                         campo = '';
-                    for (var i in departamento) {
-                        campo += '<option value="' + departamento[i].id_celula + '">' + departamento[i].nombre + '</option>';
+                    for (var i in turno) {
+                        campo += '<option value="' + turno[i].code_value.trim() + '">' + turno[i].code_value_desc + '</option>';
                     }
-                    txtCelulaL.html(campo);
+                    $('#txtClasificacion').html(campo);
+                    $('#editClasificacion').html(campo);
                 }
-            });*/
+            });
         }
 
         btnNuevoturno.on('click', function () {
@@ -508,6 +511,7 @@ switch (seccionActual) {
             var __endTime = moment("1992-11-23T" + horaSalida.val()).format();
 
             var __duration = moment.duration(moment(__endTime).diff(__startTime));
+    
             __hours = __duration.asHours()*60;
 
             horarioSalida.text(hs + ' / Joranda Laboral: ' +  __hours + ' minutos.');
@@ -563,6 +567,139 @@ switch (seccionActual) {
         });
 
         break;
+    case 'asignar-turnos':
+        tablaTurnosUsuarios();
+
+        $("#buscarEmpleadoTurno").on("keyup", function () {
+            var value = $(this).val().toLowerCase();
+            $("#tableTurnosEmpleado tr").filter(function () {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            });
+        });
+
+        let obtenerTipoTurno = () => {
+            $.ajax({
+                type: 'POST',
+                url: 'inc/model/fetch.php',
+                data: { accion: 'obtenerTurnos' },
+                success: function (response) {
+                    let respuesta = JSON.parse(response);
+                    //console.log(respuesta);
+                    let turno = respuesta.informacion,
+                        opcion = '<option value="">Elige una clasificacion de turno</option>';
+                    for (var i in turno) {
+                        opcion += '<option value="'+ turno[i].code_value +'">'+ turno[i].code_value_desc +'</option>';
+                    }
+                    $('#clasificacionTurnos').html(opcion);
+                }
+            });
+        }
+
+        $('#clasificacionTurnos').focusout(function () {
+            var key = ($('#clasificacionTurnos').val());
+            if (key !== '')
+                obtenerListaTurnos(key);
+            else
+                $('#turnosDisponibles').empty().append('<option selected="" value="">Selecciona una Clasificacion de Turno</option>');
+        });
+
+        let obtenerListaTurnos = (key) => {
+            $.ajax({
+                type: 'POST',
+                url: 'inc/model/fetch.php',
+                data: { accion: 'obtenerListaTurnos', param: key },
+                success: function (response) {
+                    let respuesta = JSON.parse(response);
+                    //console.log(respuesta);
+                    let turno = respuesta.informacion,
+                        opcion = '<option value="">Elige un turno para asignar</option>';
+                    for (var i in turno) {
+                        opcion += '<option value="'+ turno[i].id_turno +'">'+ turno[i].descripcion + ' - De ' + turno[i].hora_entrada.date.substr(11,5) + ' a ' + turno[i].hora_salida.date.substr(11,5) +'</option>';
+                    }
+                    $('#turnosDisponibles').html(opcion);
+                }
+            });
+        }
+
+        obtenerTipoTurno();
+
+        function tablaTurnosUsuarios(){
+            $('#tableTurnoEmpleado').empty();
+            $.ajax({
+                type: 'POST',
+                url: 'inc/model/fetch.php',
+                data: { accion: 'turnos_Usuarios' },
+                success: function (response) {
+                    let respuesta = JSON.parse(response);
+                    var informacion = respuesta.informacion;
+                    // console.log(informacion);
+                    for (var i in informacion) {
+                        tablaTurnosUsuarios_(informacion[i]);
+                    }
+                }
+            });
+        }
+
+        function tablaTurnosUsuarios_(rowInfo) {
+
+            var turno1 = '',turno2 = '';
+
+            turno1 = (rowInfo.Turno1 === null) ? 'NA' : rowInfo.Turno1;
+            turno2 = (rowInfo.Turno2 === null) ? 'NA' : rowInfo.Turno2;
+            pcg = (rowInfo.PCG === null) ? 'NA' : rowInfo.PCG;
+            psg = (rowInfo.PSG === null) ? 'NA' : rowInfo.PSG;
+
+            let row = $("<tr />")
+            $("#tableTurnosEmpleado").append(row); //this will append tr element to table... keep its reference for a while since we will add cels into it
+            // NUMERO DE NOMINA DEL EMPLEADO
+            //row.append($("<td> " + rowInfo.numero_nomina + " </td>"));
+            row.append($("<td><div class='custom-control custom-checkbox'><input type='checkbox' class='custom-control-input' name='numeroNomina' value='" + rowInfo.numero_nomina + "' id='nn" + rowInfo.numero_nomina + "'>"
+                        + "<label class='custom-control-label' for='nn" + rowInfo.numero_nomina + "'>" + rowInfo.numero_nomina + "</label>"
+                        + "</div></td>"));
+            // NOMBRE DEL EMPLEADO
+            row.append($("<td> " + rowInfo.nombre_largo + " </td>"));
+            // NOMBRE DEL DEPARTAMENTO
+            row.append($("<td> " + rowInfo.Departamento + " </td>"));
+            row.append($("<td> " + turno1 + " </td>"));
+            row.append($("<td> " + turno2 + " </td>"));
+        }       
+
+        function asignarTurno() {
+            let numerosNomina = [],
+                turnoClasificacion = $('#clasificacionTurnos').val(),
+                turnoAsignado = $('#turnosDisponibles').val();
+                $.each($("input[name='numeroNomina']:checked"), function () {
+                    numerosNomina.push($(this).val());
+                });
+                
+            if(numerosNomina.length === 0 || turnoClasificacion == '' || turnoAsignado == ''){
+                Swal.fire({
+                    position: 'center',
+                    type: 'warning',
+                    title: 'Campos vacios!',
+                    text: 'Favor de seleccionar una clasificacion, turno asignado y al menos un empleado',
+                    showConfirmButton: false,
+                    timer: 2500
+                  })
+            } else {
+                $.ajax({
+                    type: 'POST',
+                    url: 'inc/model/control.php',
+                    data: { accion: 'asignarTurno', tc : turnoClasificacion.trim(), ta : turnoAsignado, arrNomina : numerosNomina.join("|") },
+                    success: function (response) {
+                        let respuesta = JSON.parse(response);
+                        console.log(respuesta);
+                        if(respuesta.estado === 'correcto'){
+                            console.log(respuesta.informacion);
+                            tablaTurnosUsuarios();
+                            location.reload();   
+                        }
+                    }
+                });
+            }
+        }
+
+    break;
     default:
         break;
 }

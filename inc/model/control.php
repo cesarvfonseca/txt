@@ -513,7 +513,7 @@ if ($accion == 'eliminarTurnoUsuario')
         case 'LV': 
             $query = "UPDATE P1TurnoUsuario SET id_turno1 = 0 WHERE id = ?";
         break;
-        case 'FDS':
+        case 'S':
             $query = "UPDATE P1TurnoUsuario SET id_turno2 = 0 WHERE id = ?";
         break;
         default:
@@ -533,6 +533,46 @@ if ($accion == 'eliminarTurnoUsuario')
     sqlsrv_free_stmt( $stmt);
     sqlsrv_close( $con );
     echo json_encode($respuesta);       
+}
+
+if ($accion == 'asignarTurno')
+{
+    // die(json_encode($_POST));
+    include '../function/connection.php';
+    $ta = $_POST['ta'];
+    $tc = $_POST['tc'];
+    $arrNomina = $_POST['arrNomina'];
+    $arrNomina_ = str_replace("|", "','", $arrNomina);
+
+    $fechaActual = date("Y-m-d H:m:s");
+
+    try{
+        if($tc == 'LV'){
+            $query = "UPDATE P1TurnoUsuario SET id_turno1 = ".$ta.", updated_at = '".$fechaActual."' WHERE numero_nomina IN ('".$arrNomina_."');";
+        } else if($tc == 'S'){
+            $query = "UPDATE P1TurnoUsuario SET id_turno2 = ".$ta.", updated_at = '".$fechaActual."' WHERE numero_nomina IN ('".$arrNomina_."');";
+        }
+
+        $stmt = sqlsrv_query( $con, $query );
+
+        if( $stmt ) {
+            $respuesta = array(
+                'estado' => 'correcto',
+                'informacion' => $query
+                );
+        }else{
+            die( print_r( sqlsrv_errors(), true));
+        }
+    }catch(PDOException $e) {
+        // En caso de un error, tomar la exepcion
+        $respuesta = array(
+            'estado' => 'incorrecto',
+            'log' => $e->getMessage()
+            );
+    }
+    sqlsrv_free_stmt( $stmt);
+    sqlsrv_close( $con );
+    echo json_encode($respuesta);
 }
 
 function DiasHabiles($fecha_inicial,$fecha_final)

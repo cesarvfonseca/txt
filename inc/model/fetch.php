@@ -404,6 +404,44 @@
 		sqlsrv_close( $con ); 
 	}
 
+	if($accion == 'obtenerTurnos')
+	{
+		// die(json_encode($_POST));
+		include '../function/connection.php';
+
+		$query = "SELECT code_value,code_value_desc FROM PJCODE WHERE code_type = 'P1T' ORDER BY crtd_datetime";
+
+		$stmt = sqlsrv_query( $con, $query, $params);
+                
+		$result = array();
+		
+		if( $stmt === false) {
+			die( print_r( sqlsrv_errors(), true) );
+			$respuesta = array(
+				'estado' => 'NOK',
+				'tipo' => 'error',
+				'informacion' => 'No existe informacion',
+				'mensaje' => 'No hay datos en la BD'                
+			);
+		} else {
+			do {
+				while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)){
+				$result[] = $row; 
+				}
+			} while (sqlsrv_next_result($stmt));
+			$respuesta = array(
+				'estado' => 'OK',
+				'tipo' => 'success',
+				'informacion' => $result,
+				'mensaje' => 'Informacion obtenida'                
+			);
+		}               
+
+		echo json_encode($respuesta);
+		sqlsrv_free_stmt( $stmt);
+		sqlsrv_close( $con ); 
+	}
+
 	if($accion == 'turnoUsuarios')
 	{
 		// die(json_encode($_POST));
@@ -422,7 +460,7 @@
 							ORDER BY tu.created_at ASC";
 				$params = array( $idTurno );
 			break;
-			case 'FDS':
+			case 'S':
 				$query = "SELECT tu.id,te.numero_nomina,te.nombre_largo,tc.nombre AS Departamento,FORMAT (tu.created_at, 'yyyy-MM-dd') as fecha_creada  FROM P1TurnoUsuario AS tu
 							INNER JOIN tbempleados AS te
 							ON te.numero_nomina = tu.numero_nomina
@@ -466,6 +504,56 @@
 		sqlsrv_close( $con ); 
 	}
 
+	if($accion == 'turnos_Usuarios')
+	{
+		// die(json_encode($_POST));
+		include '../function/connection.php';
+		
+		$query = "SELECT te.numero_nomina,te.nombre_largo,tc.nombre AS Departamento,tu.id_turno1,tu.id_turno2,
+					(SELECT descripcion FROM P1Turnos WHERE id_turno = tu.id_turno1) AS Turno1,
+					(SELECT descripcion FROM P1Turnos WHERE id_turno = tu.id_turno2) AS Turno2
+					FROM tbempleados AS te
+					INNER JOIN tbdatos_empleados AS td 
+					ON te.numero_nomina = tD.numero_nomina
+					LEFT JOIN P1TurnoUsuario AS tu
+					ON te.numero_nomina = tu.numero_nomina
+					INNER JOIN tbcelula AS tc
+					ON te.id_celula = tc.id_celula
+					AND td.clasificacion IN ('A','B') AND te.status <> 'B' AND te.id_sucursal IN (3)
+					ORDER BY te.numero_nomina";
+
+		
+		$stmt = sqlsrv_query( $con, $query);
+                
+		$result = array();
+		
+		if( $stmt === false) {
+			die( print_r( sqlsrv_errors(), true) );
+			$respuesta = array(
+				'estado' => 'NOK',
+				'tipo' => 'error',
+				'informacion' => 'No existe informacion',
+				'mensaje' => 'No hay datos en la BD'                
+			);
+		} else {
+			do {
+				while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)){
+				$result[] = $row; 
+				}
+			} while (sqlsrv_next_result($stmt));
+			$respuesta = array(
+				'estado' => 'OK',
+				'tipo' => 'success',
+				'informacion' => $result,
+				'mensaje' => 'Informacion obtenida'                
+			);
+		}               
+
+		echo json_encode($respuesta);
+		sqlsrv_free_stmt( $stmt);
+		sqlsrv_close( $con ); 
+	}
+
 	if ( $accion == 'datosIncidencias' ) 
 	{
 		// die(json_encode($_POST));
@@ -476,6 +564,46 @@
 		
 		$query = "SELECT * FROM P1empleadoHorario(?,?) ORDER BY fechaLaboral,horaentrada ASC";
 		$params = array($fechaINI, $fechaFIN);
+		//$options =  array( "Scrollable" => SQLSRV_CURSOR_KEYSET );
+		$stmt = sqlsrv_query( $con, $query, $params);
+
+		$result = array();
+	
+		if( $stmt === false) {
+			die( print_r( sqlsrv_errors(), true) );
+			$respuesta = array(
+				'estado' => 'error',
+				'tipo' => 'error',
+				'informacion' => 'No existe informacion',
+				'mensaje' => 'No hay datos en la BD'                
+			);
+		} else {
+			do {
+				while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)){
+				$result[] = $row; 
+				}
+			} while (sqlsrv_next_result($stmt));
+			$respuesta = array(
+				'estado' => 'correcto',
+				'tipo' => 'success',
+				'informacion' => $result,
+				'mensaje' => 'Informacion obtenida de buscar'                
+			);
+		}
+	
+		echo json_encode($respuesta);
+		sqlsrv_free_stmt( $stmt);
+		sqlsrv_close( $con ); 
+	}
+
+	if ( $accion == 'obtenerListaTurnos' ) 
+	{
+		// die(json_encode($_POST));
+		$param = $_POST['param'];
+		include '../function/connection.php';
+		
+		$query = "SELECT * FROM P1Turnos WHERE clave_turno = ?";
+		$params = array($param);
 		//$options =  array( "Scrollable" => SQLSRV_CURSOR_KEYSET );
 		$stmt = sqlsrv_query( $con, $query, $params);
 

@@ -143,7 +143,7 @@
                 </div>
             </div>
             <hr>
-            <button class="btn btn-info" id="btnEditarTurno">Editar Turno</button>
+            <button class="btn btn-info d-none" id="btnEditarTurno">Editar Turno</button>
             <button class="btn btn-success d-none" id="btnActualizarTurno">Actualizar Turno</button>
             <button class="btn btn-warning d-none float-right" id="btnEliminarTurno">Eliminar Turno</button>
             <hr>
@@ -165,7 +165,7 @@
             
 
             <br>
-            <button class="btn btn-danger btn-block btncancelarTN">Cancelar</button>
+            <button class="btn btn-danger btn-block btncancelarTN mb-4">Cancelar</button>
         </div>
 
     </div>
