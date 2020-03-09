@@ -519,7 +519,7 @@
 					ON te.numero_nomina = tu.numero_nomina
 					INNER JOIN tbcelula AS tc
 					ON te.id_celula = tc.id_celula
-					AND td.clasificacion IN ('A','B') AND te.status <> 'B' AND te.id_sucursal IN (3)
+					AND td.clasificacion IN ('A','B','E') AND te.status <> 'B' AND te.id_sucursal IN (3)
 					ORDER BY te.numero_nomina";
 
 		
@@ -604,6 +604,76 @@
 		
 		$query = "SELECT * FROM P1Turnos WHERE clave_turno = ?";
 		$params = array($param);
+		//$options =  array( "Scrollable" => SQLSRV_CURSOR_KEYSET );
+		$stmt = sqlsrv_query( $con, $query, $params);
+
+		$result = array();
+	
+		if( $stmt === false) {
+			die( print_r( sqlsrv_errors(), true) );
+			$respuesta = array(
+				'estado' => 'error',
+				'tipo' => 'error',
+				'informacion' => 'No existe informacion',
+				'mensaje' => 'No hay datos en la BD'                
+			);
+		} else {
+			do {
+				while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)){
+				$result[] = $row; 
+				}
+			} while (sqlsrv_next_result($stmt));
+			$respuesta = array(
+				'estado' => 'correcto',
+				'tipo' => 'success',
+				'informacion' => $result,
+				'mensaje' => 'Informacion obtenida de buscar'                
+			);
+		}
+	
+	
+		echo json_encode($respuesta);
+		sqlsrv_free_stmt( $stmt);
+		sqlsrv_close( $con ); 
+	}
+
+	if ( $accion == 'omisiones' ) 
+	{
+		// die(json_encode($_POST));
+		$fini = $_POST['fini'];
+		$ffin = $_POST['ffin'];
+		include '../function/connection.php';
+		
+		$query = "SELECT te.numero_nomina,te.nombre_largo,tc.nombre AS Departamento,jl.fecha,
+					CASE 
+						WHEN (SELECT hora_entrada_omision FROM P1Ausentismo WHERE numero_nomina = te.numero_nomina AND fecha_omision = jl.fecha) <> NULL
+						THEN (SELECT hora_entrada_omision FROM P1Ausentismo WHERE numero_nomina = te.numero_nomina AND fecha_omision = jl.fecha)
+						ELSE jl.horaentrada
+					END AS horaEntrada,
+					(SELECT puesto FROM P1TXTVAC WHERE employee = te.numero_nomina AND fecha = jl.fecha AND tipo = 7) as herh,
+					CASE 
+						WHEN (SELECT hora_salida_omision FROM P1Ausentismo WHERE numero_nomina = te.numero_nomina AND fecha_omision = jl.fecha) <> NULL
+						THEN (SELECT hora_salida_omision FROM P1Ausentismo WHERE numero_nomina = te.numero_nomina AND fecha_omision = jl.fecha)
+						ELSE jl.horasalida
+					END AS horaSalida,
+					(SELECT puesto FROM P1TXTVAC WHERE employee = te.numero_nomina AND fecha = jl.fecha AND tipo = 8) as hsrh,
+					CASE
+						WHEN (SELECT puesto FROM P1TXTVAC WHERE employee = te.numero_nomina AND fecha = jl.fecha AND tipo = 7) IS NOT NULL AND (SELECT puesto FROM P1TXTVAC WHERE employee = te.numero_nomina AND fecha = jl.fecha AND tipo = 8) IS NOT NULL
+						THEN DATEDIFF(MINUTE,(SELECT puesto FROM P1TXTVAC WHERE employee = te.numero_nomina AND fecha = jl.fecha AND tipo = 7),(SELECT puesto FROM P1TXTVAC WHERE employee = te.numero_nomina AND fecha = jl.fecha AND tipo = 8))
+						WHEN (SELECT puesto FROM P1TXTVAC WHERE employee = te.numero_nomina AND fecha = jl.fecha AND tipo = 7) IS NOT NULL AND (SELECT puesto FROM P1TXTVAC WHERE employee = te.numero_nomina AND fecha = jl.fecha AND tipo = 8) IS NULL
+						THEN DATEDIFF(MINUTE,(SELECT puesto FROM P1TXTVAC WHERE employee = te.numero_nomina AND fecha = jl.fecha AND tipo = 7),jl.horasalida)
+						WHEN (SELECT puesto FROM P1TXTVAC WHERE employee = te.numero_nomina AND fecha = jl.fecha AND tipo = 7) IS NULL AND (SELECT puesto FROM P1TXTVAC WHERE employee = te.numero_nomina AND fecha = jl.fecha AND tipo = 8) IS NOT NULL
+						THEN DATEDIFF(MINUTE,jl.horaentrada,(SELECT puesto FROM P1TXTVAC WHERE employee = te.numero_nomina AND fecha = jl.fecha AND tipo = 8))
+						ELSE DATEDIFF(MINUTE,jl.horaentrada,jl.horasalida)
+					END AS jorndaLaboral			
+					FROM tbempleados AS te
+					INNER JOIN jornadaLaboral AS jl
+					ON jl.numero_nomina  LIKE '%'+te.numero_nomina
+					INNER JOIN tbcelula AS tc
+					ON tc.id_celula = te.id_celula
+					AND jl.fecha >= ? AND jl.fecha <= ?";
+
+		$params = array($fini,$ffin);
 		//$options =  array( "Scrollable" => SQLSRV_CURSOR_KEYSET );
 		$stmt = sqlsrv_query( $con, $query, $params);
 

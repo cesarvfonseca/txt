@@ -49,6 +49,7 @@
                     <div class="form-group col-md-2">
                         <label for="horaEntrada">Hora de entrada (formato 24 hrs)</label>
                         <input class="form-control" type="time" id="horaEntrada" min="07:00" max="20:00" required>
+                        <!-- <input class="form-control" type="time" id="time" name="bday" pattern="([1]?[0-9]|2[0-3]):[0-5][0-9]"/> -->
                     </div>
                     <div class="form-group col-md-2">
                         <label for="entradaTemprana">Entrada Temprana</label>
@@ -89,6 +90,7 @@
             <br>
         </div>
 
+        <!--EDITAR TURNO -->
         <div class="col-md-8 offset-2 detalleTurno d-none">
             <h3 class="display-5 text-center mt-4">Detalles del turno</h3>
             <hr>

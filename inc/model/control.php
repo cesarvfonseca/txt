@@ -535,6 +535,38 @@ if ($accion == 'eliminarTurnoUsuario')
     echo json_encode($respuesta);       
 }
 
+if($accion == 'omisionES'){
+    // die(json_encode($_POST));
+    include '../function/connection.php';
+    $nomina = $_POST['numero_nomina'];
+    $fecha = $_POST['fecha'];
+    $hora = $_POST['hora'];
+    $comentario = $_POST['comentario'];
+    $parametro = $_POST['param'];
+
+    $query = "EXEC P1omisionES ?,?,?,?,?";
+
+
+    $params = array($fecha,$nomina,$hora,$comentario,$parametro);
+
+    $stmt = sqlsrv_query( $con, $query, $params );
+
+    // var_dump($params);
+
+    if( $stmt ) {
+        $respuesta = array(
+            'estado' => 'correcto'
+            );
+    }else{
+        $respuesta = array(
+            'estado' => 'incorrecto'
+            );
+    }
+    sqlsrv_free_stmt( $stmt);
+    sqlsrv_close( $con );
+    echo json_encode($respuesta); 
+}
+
 if ($accion == 'asignarTurno')
 {
     // die(json_encode($_POST));

@@ -48,6 +48,8 @@
                     <th>TXT en Contra</th>
                     <th>PCG</th>
                     <th>PSG</th>
+                    <th>SPT</th>
+                    <th>VAC</th>
 					<th>Turno</th>
 					<th>Turno Entrada</th>
 					<th>Turno Salida</th>

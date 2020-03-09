@@ -177,7 +177,7 @@ switch (seccionActual) {
                 data: { accion: 'datosIncidencias', ff:ff, fi:fi },
                 success: function (response) {
                     var respuesta = JSON.parse(response);
-                    // console.log(respuesta);
+                    console.log(respuesta);
                     var informacion = respuesta.informacion;
                     for (var i in informacion) {
                         tablaIncidenciasNom(informacion[i]);
@@ -188,12 +188,14 @@ switch (seccionActual) {
 
         function tablaIncidenciasNom(rowInfo) {
             
-            var txtf = '',txtc = '',pcg = '',psg = '';
+            var txtf = '',txtc = '',pcg = '',psg = '',spt = '',vac = '';
 
             txtf = (rowInfo.TXTF === null) ? 'NA' : rowInfo.TXTF;
             txtc = (rowInfo.TXTC === null) ? 'NA' : rowInfo.TXTC;
             pcg = (rowInfo.PCG === null) ? 'NA' : rowInfo.PCG;
             psg = (rowInfo.PSG === null) ? 'NA' : rowInfo.PSG;
+            spt = (rowInfo.SPT === null) ? 'NA' : rowInfo.SPT;
+            vac = (rowInfo.VAC === null) ? 'NA' : rowInfo.VAC;
 
             let row = $("<tr />")
 
@@ -216,6 +218,8 @@ switch (seccionActual) {
             row.append($("<td> " + txtc + " </td>"));
             row.append($("<td> " + pcg + " </td>"));
             row.append($("<td> " + psg + " </td>"));
+            row.append($("<td> " + spt + " </td>"));
+            row.append($("<td> " + vac + " </td>"));
             row.append($("<td> " + rowInfo.nombreTurno + " </td>"));
             row.append($("<td> " + rowInfo.horarioEntrada + " </td>"));
             row.append($("<td> " + rowInfo.horarioSalida + " </td>"));
@@ -690,8 +694,6 @@ switch (seccionActual) {
                         let respuesta = JSON.parse(response);
                         console.log(respuesta);
                         if(respuesta.estado === 'correcto'){
-                            console.log(respuesta.informacion);
-                            tablaTurnosUsuarios();
                             location.reload();   
                         }
                     }
@@ -700,8 +702,209 @@ switch (seccionActual) {
         }
 
     break;
+    case 'omisiones':
+        var fini = $('#omfechaIni'),
+            ffin = $('#omfechaFin'),
+            txtomBuscar = $('#txtomBuscar'),
+            btnomRango = $('#btnomRango');
+
+        btnomRango.on('click',function(){
+            tablaOmisiones(fini.val(),ffin.val());
+            $('#avisoR').addClass('d-none');
+            $('#alertaR').addClass('d-none');
+            txtomBuscar.removeAttr('disabled');
+        });
+
+        txtomBuscar.on("keyup", function () {
+            var value = $(this).val().toLowerCase();
+            $("#tableomisiones tr").filter(function () {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            });
+        });
+
+        function tablaOmisiones(fini,ffin){
+            $('#tableomisiones').empty();
+            $.ajax({
+                type: 'POST',
+                url: 'inc/model/fetch.php',
+                data: { accion: 'omisiones',ffin:ffin, fini:fini },
+                success: function (response) {
+                    let respuesta = JSON.parse(response);
+                    var informacion = respuesta.informacion;
+                    // console.log(respuesta);
+                    if(respuesta.informacion.length < 1){
+                        $('#alertaomiR').removeClass('d-none');
+                    } else {
+                        for (var i in informacion) {
+                            tablaOmisionesUsuarios_(informacion[i]);
+                        }
+                    }
+                }
+            });
+        }
+
+        function tablaOmisionesUsuarios_(rowInfo) {
+
+            var classHE = '',classHS = '', classJL = '',erh='',srh='';
+
+            classHE = (rowInfo.horaEntrada.date.substr(11,5) === '00:00') ? 'alert-danger' : '';
+            erh = (rowInfo.herh === null) ? 'NA' : rowInfo.herh,
+            srh = (rowInfo.herh === null) ? 'NA' : rowInfo.hsrh,
+            classHS = (rowInfo.horaSalida.date.substr(11,5) === '00:00') ? 'alert-danger' : '';
+            classJL = (rowInfo.jorndaLaboral < 100) ? 'alert-danger' : '';
+
+            let row = $("<tr />")
+            $("#tableomisiones").append(row); //this will append tr element to table... keep its reference for a while since we will add cels into it
+            // NUMERO DE NOMINA DEL EMPLEADO
+            //row.append($("<td> " + rowInfo.numero_nomina + " </td>"));
+            row.append($("<td>" + rowInfo.numero_nomina + "</td>"));
+            // NOMBRE DEL EMPLEADO
+            row.append($("<td> " + rowInfo.nombre_largo + " </td>"));
+            // NOMBRE DEL DEPARTAMENTO
+            row.append($("<td> " + rowInfo.Departamento + " </td>"));
+            row.append($("<td> " + rowInfo.fecha.date.substr(0,10)  + " </td>"));
+            row.append($("<td class='" + classHE + "'> " + rowInfo.horaEntrada.date.substr(11,5)  + " </td>"));
+            row.append($("<td class='text-info horaEntradaRH' data-nomina='" + rowInfo.numero_nomina + "' data-fecha='" + rowInfo.fecha.date.substr(0,10) + "' data-value='" + erh + "'> " + erh  + " </td>"));
+            row.append($("<td class='" + classHS + "'> " + rowInfo.horaSalida.date.substr(11,5)  + " </td>"));
+            row.append($("<td class='text-info horaSalidaRH' data-nomina='" + rowInfo.numero_nomina + "' data-fecha='" + rowInfo.fecha.date.substr(0,10) + "' data-value='" + srh + "'> " + srh  + " </td>"));
+            row.append($("<td class='" + classJL + "'> " + rowInfo.jorndaLaboral  + " </td>"));
+            row.append($("<td class='text-center'>" + 
+                            "<a tabindex='0' class='btn btn-sm btn-primary btnHEntrada' data-nomina='" + rowInfo.numero_nomina + "' data-fecha='" + rowInfo.fecha.date.substr(0,10) + "' role='button'><i class='far fa-calendar-minus'></i> Entrada</a>"+
+                            "<a tabindex='1' class='btn btn-sm btn-warning mx-3 btnHSalida' data-nomina='" + rowInfo.numero_nomina + "' data-fecha='" + rowInfo.fecha.date.substr(0,10) + "' role='button'><i class='fas fa-calendar-minus'></i> Salida</a>"+
+                            "</td>"));
+
+
+            $('.btnHEntrada').unbind().click(function (e) {
+                e.preventDefault();
+                editarHoraEntrada($(this));
+            });
+
+            $('.horaEntradaRH').unbind().click(function (e) {
+                e.preventDefault();
+                borrarHora($(this),200,7);
+            });
+
+            $('.btnHSalida').unbind().click(function (e) {
+                e.preventDefault();
+                editarHoraSalida($(this));
+            });
+
+            $('.horaSalidaRH').unbind().click(function (e) {
+                e.preventDefault();
+                borrarHora($(this),200,8);
+            });
+            
+        }
+
+        async function borrarHora(btnHoraRH,parametro,tipo){
+            var nomina = btnHoraRH.data('nomina'),
+                valor = btnHoraRH.data('value'),
+                fecha = btnHoraRH.data('fecha'), comentario = tipo, nuevah = '';
+
+                console.log(valor);
+
+                if(valor === 'NA' || valor === null){
+                    return false;
+                }
+
+                Swal.fire({
+                    title: '¿Eliminar hora?',
+                    text: "¿Deseas eliminar la hora?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Si'
+                  }).then((result) => {
+                    if (result.value) {
+                        omisionES(parametro, nuevah, nomina, fecha, comentario);
+                        // Swal.fire(
+                        //     'Eliminada!',
+                        //     'El registro ha sido eliminado',
+                        //     'success'
+                        // )
+                        tablaOmisiones(fini.val(),ffin.val());
+                    }
+                  })            
+        }
+        
+        async function editarHoraEntrada(btnHoraEntrada){
+            var nomina = btnHoraEntrada.data('nomina'),
+                fecha = btnHoraEntrada.data('fecha');
+            
+                const { value: formValues } = await Swal.fire({
+                    title: 'Hora de entrada ' + fecha,
+                    html:
+                        '<label>Ingresar hora de entrada para el empleado ' + nomina + ' (Formato 24hrs.)</label>'+
+                        '<input id="rhHoraEntrada" type="time" class="swal2-input">' +
+                        '<input id="rhComentario" type="text" value="Hora de entrada validada por RH" class="swal2-input">',
+                    focusConfirm: false,
+                    preConfirm: () => {
+                      return [
+                        document.getElementById('rhHoraEntrada').value,
+                        document.getElementById('rhComentario').value
+                      ]
+                    }
+                  })
+                  
+                  if (formValues) {
+                    var nuevah = formValues[0],
+                        comentario = formValues[1],
+                        param = 7;
+                        omisionES(param, nuevah, nomina, fecha, comentario);
+                  }
+            
+        }
+
+        function omisionES (param, nh, nn, fecha, comentario) { 
+            $.ajax({
+                type: 'POST',
+                url: 'inc/model/control.php',
+                data: { accion: 'omisionES',param:param, hora:nh, numero_nomina : nn, fecha: fecha, comentario: comentario },
+                success: function (response) {
+                    let respuesta = JSON.parse(response);
+                    // console.log(respuesta);
+                    if(respuesta.estado  === 'correcto'){
+                        tablaOmisiones(fini.val(),ffin.val());
+                    } else {
+                        console.log('error');
+                    }
+                }
+            });
+         }
+
+        async function editarHoraSalida(btnHoraSalida){
+            var nomina = btnHoraSalida.data('nomina'),
+                fecha = btnHoraSalida.data('fecha');
+            
+                const { value: formValues } = await Swal.fire({
+                    title: 'Hora de salida ' + fecha,
+                    html:
+                        '<label>Ingresar hora de salida para el empleado ' + nomina + ' (Formato 24hrs.)</label>'+
+                      '<input id="rhHoraSalida" type="time" class="swal2-input">' +
+                      '<input id="rhComentario" type="text" value="Hora de salida validada por RH" class="swal2-input">',
+                    focusConfirm: false,
+                    preConfirm: () => {
+                      return [
+                        document.getElementById('rhHoraSalida').value,
+                        document.getElementById('rhComentario').value
+                      ]
+                    }
+                  })
+                  
+                  if (formValues) {
+                    var nuevah = formValues[0],
+                        comentario = formValues[1],
+                        param = 8;
+                        // console.log(nuevah);
+                        omisionES(param, nuevah, nomina, fecha, comentario);
+                  }
+            
+        }
+
+    break;
     default:
-        break;
+    break;
 }
 
 
