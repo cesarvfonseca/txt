@@ -77,6 +77,8 @@
 							include('inc/templates/RH/administrar-turno.php');
 						} elseif ($request=='asignar-turnos') {
 							include('inc/templates/RH/asignar_turnos.php');
+						} elseif ($request=='omisiones') {
+							include('inc/templates/RH/omisiones.php');
 						}
 					}
 

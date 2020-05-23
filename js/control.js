@@ -1152,15 +1152,56 @@ function enviarTXTC(e) {
         nombre_empleado = document.querySelector('#employee_name').value,
         nombre_destinatario = document.querySelector('#txtNamec').value,
         correo_destinatario = document.querySelector('#txtMailc').value,
-        saldoHoras = document.querySelector('#saldoHoras').value;
+        horasSemanales = document.querySelector('#txtcSemanal').value;
+        horasSemanalesC = document.querySelector('#txtcSemanalC').value;
+        horastotal = document.querySelector('#txtcTotal').value;
+        horastotalC = document.querySelector('#txtcTotalC').value;
+        validacion_txtc = document.querySelector('#validacion_txtc').value;
     //console.log(nombre_empleado + ' ' + nombre_destinatario + ' ' + correo_destinatario + ' ' + tipo);
 
-    if (saldoHoras <= -48) {
+    // if (saldoHoras <= -11) {
+    //     swal({
+    //         type: 'error',
+    //         title: 'Horas en contra excedidas!',
+    //         text: 'Tu saldo de horas negativas es mayor a las permitidas, no puedes generar la solicitud'
+    //     })
+    var hsemana = parseFloat(horas) + parseFloat(horasSemanales);
+    var htotal = parseFloat(horas) + parseFloat(horastotal);
+    var hsemanar = parseFloat(horasSemanalesC) - parseFloat(hsemana);
+    var htotalr = parseFloat(horastotalC) - parseFloat(htotal);
+
+    console.log(hsemana);
+    console.log(htotal);
+    console.log(hsemanar);
+    console.log(htotalr);
+
+    if(hsemana > horasSemanalesC && horastotal < 0){
+        swal({
+            type: 'error',
+            title: 'Horas semanales en contra excedidas!',
+            text: 'Tu petición sobre pasa tus horas semanales en contra disponibles por ' + Math.abs(hsemanar.toFixed(1)) + ' hrs.'
+        })
+        setTimeout(function () {
+            location.reload();
+        }, 3000);
+    } else if (htotal > horastotalC && horastotal < 0){
         swal({
             type: 'error',
             title: 'Horas en contra excedidas!',
-            text: 'Tu saldo de horas negativas es mayor a las permitidas, no puedes generar la solicitud'
+            text: 'Tu petición sobre pasa tus horas en contra disponibles por ' + Math.abs(htotalr.toFixed(1)) + ' hrs.'
         })
+        setTimeout(function () {
+            location.reload();
+        }, 3000);
+    } else if (validacion_txtc == 'NOK' && horastotal < 0) {
+        swal({
+            type: 'error',
+            title: 'Horas en contra excedidas!',
+            text: 'Tu saldo de horas negativas es mayor a las permitidas, no puedes generar la solicitud.'
+        })
+        setTimeout(function () {
+            location.reload();
+        }, 3000);
     } else {
         if (fecha === '' || horas === '' || razon === '') {
             swal({
@@ -1857,7 +1898,7 @@ function tablaPersonal(rowInfo) {
     }
 
     //VALIDACION NO AUTORIZAR HORAS EL MIMSO DIA DE LA SOLICITUD
-    if(fecha_solicitud >= fecha_actual && rowInfo.tipo !== 3 ){
+    if(fecha_solicitud <= fecha_actual && rowInfo.tipo ==! 3 ){
         btnAtributo = 'd-none';
     }
 

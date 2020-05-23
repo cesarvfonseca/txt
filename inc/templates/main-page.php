@@ -19,8 +19,36 @@
 		<h4 class="display-5">
 			<p>Departamento: <?php echo $emp_depto; ?></p>
 			<input type="hidden" id="employee_depto" value="<?php echo $emp_depto; ?>">
+			<input type="hidden" id="validacion_txtc" value="<?php echo $validacion_txtc; ?>" readonly>
+			<input type="hidden" id="txtcSemanal" value="<?php echo $txtcSemanal; ?>" readonly>
+			<input type="hidden" id="txtcTotal" value="<?php echo $txtcTotal; ?>" readonly>
+			<input type="hidden" id="txtcSemanalC" value="<?php echo $txtcSemanalC; ?>" readonly>
+			<input type="hidden" id="txtcTotalC" value="<?php echo $txtcTotalC; ?>" readonly>
 		</h4>
 	</div>
+</div>
+<hr>
+<div class="row">
+	<table style="background: #f8f9fa !important" class="table table-bordered table-sm text-center">
+		<thead style="background: #eee !important" class="bg-info">
+		    <tr>
+		      <th scope="col">Antigüedad</th>
+		      <th scope="col">Horas Semanal Permitidas</th>
+		      <th scope="col">Horas en contra Permitidas</th>
+		      <th scope="col">Horas en contra semana actual</th>
+		      <th scope="col">Horas en contra semana restantes</th>
+		    </tr>
+  		</thead>
+  		<tbody style="background: #f8f9fa !important">
+  			<tr>
+  				<td><p class="h4"><?php echo number_format($empAnt,0); ?> años</p></td>
+  				<td><p class="h4"><?php echo $txtcSemanalC; ?></p></td>
+  				<td><p class="h4"><?php echo $txtcTotalC; ?></p></td>
+  				<td><p class="h4"><?php echo $txtcSemanal; ?></p></td>
+  				<td><p class="h4"><?php echo $horasRestantes; ?></p></td>
+  			</tr>
+  		</tbody>
+	</table>
 </div>
 <hr>
 <div class="row">

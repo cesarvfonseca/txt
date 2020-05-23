@@ -114,12 +114,14 @@ if ($accion == 'txt' || $accion == 'txtc' || $accion == 'salidaTrabajo' || $acci
     $nombre_empleado = $_POST["n_empleado"];
     $nombre_destinatario = $_POST["n_destinatario"];
     $correo_destinatario = $_POST["c_destinatario"];
+    $jefe_aut = 0;
     
     try{
         if ($accion == 'txt'){
             $tipo = 1;
         } else if($accion == 'txtc'){
             $tipo = 2;
+            $jefe_aut = 1;
         } else if($accion == 'salidaTrabajo'){
             $tipo = 5;
         } else if($accion == 'pcg'){
@@ -139,20 +141,26 @@ if ($accion == 'txt' || $accion == 'txtc' || $accion == 'salidaTrabajo' || $acci
                 );
         } 
         else {
-            $insert_qry = "INSERT INTO P1TXTVAC (employee,fecha,tipo,horas,puesto,emp_observaciones,crtd_user,lupd_datetime,lupd_user)
-            VALUES (?,?,?,?,?,?,?,GETDATE(),?)";
-            $params = array( $employeeID, $fecha, $tipo, $horas, $motivo,$razon, $employeeID, $employeeID);
-            $stmt = sqlsrv_query( $con, $insert_qry, $params );
-            if( $stmt ) {
+            $insert_qry = "EXEC P1InsertarHoras ?,?,?,?,?,?,?,?,?";
+            // $insert_qry = "INSERT INTO P1TXTVAC (employee,fecha,tipo,horas,puesto,emp_observaciones,crtd_user,lupd_datetime,lupd_user)
+            // VALUES (?,?,?,?,?,?,?,GETDATE(),?)";
+            $params = array( $employeeID, $fecha, $tipo, $horas, $motivo,$razon, $employeeID, $employeeID, $jefe_aut);
+            $_stmt = sqlsrv_query( $con, $insert_qry, $params );
+            $resultNum = sqlsrv_rows_affected( $_stmt ); 
+            if($resultNum > 0){
                 $respuesta = array(
-                    'estado' => 'correcto'
+                    'estado' => 'correcto',
+                    'mensaje' => 'Proceso realizado correctamente.'
                     );
                 $fechaINI = $fecha;
                 $fechaFIN = $fecha;
                 //PARA ENVIO DE CORREO
-                enviarCorreo ($correo_destinatario,$nombre_destinatario,$employeeID, $nombre_empleado, $accion, $razon, $fechaINI, $fechaFIN, $horas);
+                //enviarCorreo ($correo_destinatario,$nombre_destinatario,$employeeID, $nombre_empleado, $accion, $razon, $fechaINI, $fechaFIN, $horas);
             }else{
-                die( print_r( sqlsrv_errors(), true));
+                $respuesta = array(
+                    'estado' => 'incorrecto',
+                    'mensaje' => 'La antigüedad de la incidencia es mayor a la permitida por el sistema y/o excediste las horas en contra permitidas.'
+                    );
             }
         }
         
@@ -187,7 +195,7 @@ if ($accion == 'editar_incidencia')
             if ($row = sqlsrv_fetch_array( $stmt_verificar_autorizacion, SQLSRV_FETCH_ASSOC)) {
               $estado = $row['jefe_autorizacion'];
               if ($estado == 0) {
-                $update_qry = "UPDATE P1TXTVAC SET horas = ?, lupd_datetime = GETDATE(), lupd_user = ? WHERE id = ?";
+                $update_qry = "UPDATE P1TXTVAC SET horas = ABS(?), lupd_datetime = GETDATE(), lupd_user = ? WHERE id = ?";
                 $params = array( $horas, $idempleado, $idmov);
                 $stmt = sqlsrv_query( $con, $update_qry, $params );
                 if( $stmt ) {

@@ -162,7 +162,7 @@
 					END AS total_txt_favor, 
 					CASE
 						WHEN tipo = 2
-						THEN SUM(horas) 
+						THEN SUM(ABS(horas))
 					END AS total_txt_contra,
 					CASE
 						WHEN tipo = 3
@@ -193,5 +193,31 @@
 	}
 
 	sqlsrv_free_stmt( $stmt_txt_total);
+
+	// VALIDAR MAXIMO TXT EN CONTRA
+	$validarTXTC = "SELECT * FROM validacionCOVID (?)";
+
+	$params = array( $employee_id );
+    $stmt_validar_txtc = sqlsrv_query( $con, $validarTXTC, $params );
+
+	if( $stmt_validar_txtc === false ) {
+	     die( print_r( sqlsrv_errors(), true));
+	}
+
+    while ($row = sqlsrv_fetch_array( $stmt_validar_txtc, SQLSRV_FETCH_ASSOC)){
+
+	    $validacion_txtc .= $row['VALIDACION'];
+	    $txtcSemanal .= $row['txtcSemana'];
+		$txtcTotal.= $row['txtC'];
+		$txtcSemanalC .= $row['horastxtcSemanales'];
+	    $txtcTotalC .= $row['horastxtcTotal'];
+	    $empAnt .= $row['Antiguedad'];
+		$horasRestantes .= $row['horastxtcSemanales']-$row['txtcSemana'];
+
+	}
+
+	sqlsrv_free_stmt( $stmt_validar_txtc);
+
+	// VALIDAR MAXIMO TXT EN CONTRA
 
  ?>

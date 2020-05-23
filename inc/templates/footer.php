@@ -22,6 +22,7 @@
 						<a class="dropdown-item" href="index.php?request=rh_resumen"><i class="fas fa-user-friends"></i> Resumen de Personal</a>
 						<a class="dropdown-item" href="index.php?request=turnos"><i class="fas fa-business-time"></i> Administrar Turnos</a>
 						<a class="dropdown-item" href="index.php?request=asignar-turnos"><i class="fas fa-user-clock"></i> Asignar Horarios</a>
+						<a class="dropdown-item" href="index.php?request=omisiones"><i class="fas fa-clock"></i> Omisiones</a>
 					</div>
 				</div>
 			<?php endif ?>
